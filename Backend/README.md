@@ -1,7 +1,3 @@
-
-markdown
-Copiar
-Editar
 # 📚 LinkUDP Backend
 
 Backend de la plataforma **LinkUDP**, desarrollada con NestJS, Prisma y PostgreSQL para conectar estudiantes con tutores universitarios.
