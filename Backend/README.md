@@ -1,5 +1,3 @@
-Gracias por la aclaración. Aquí tienes el **README.md completo y autoconclusivo**, incluyendo los créditos y elementos visuales de NestJS, junto con las instrucciones personalizadas para el backend de LinkUDP:
-
 ````markdown
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
