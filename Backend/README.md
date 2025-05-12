@@ -110,22 +110,3 @@ src/
 * Usa ramas por funcionalidad (`feature/auth`, `feature/profile`, etc.).
 * Tras actualizar modelos Prisma, corre `npx prisma migrate dev`.
 
----
-
-## 📚 Recursos útiles
-
-* [Documentación NestJS](https://docs.nestjs.com)
-* [Documentación Prisma](https://www.prisma.io/docs)
-* [Curso de NestJS (oficial)](https://docs.nestjs.com/recipes)
-
----
-
-## 📝 Licencia
-
-Este proyecto es desarrollado con fines académicos por estudiantes de la Universidad Diego Portales.
-NestJS es un framework de código abierto bajo licencia MIT.
-
-```
-
-Copia este contenido directamente en tu archivo `README.md`. ¿Quieres ahora el `.env.example` o el `schema.prisma` para completar la base del proyecto?
-```
