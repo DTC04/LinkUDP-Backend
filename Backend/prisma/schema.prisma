@@ -1,0 +1,216 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  BOTH
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+enum DayOfWeek {
+  LUNES
+  MARTES
+  MIERCOLES
+  JUEVES
+  VIERNES
+  SABADO
+  DOMINGO
+}
+
+model User {
+  id                Int       @id @default(autoincrement())
+  full_name         String
+  email             String    @unique
+  password          String?
+  oauth_provider    String?
+  oauth_provider_id String?
+  role              Role
+  photo_url         String?
+  email_verified    Boolean   @default(false)
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+
+  studentProfile    StudentProfile?
+  tutorProfile      TutorProfile?
+
+  loginAttempts     LoginAttempt[]
+  userActivities    UserActivity[]
+  notifications     Notification[]
+  notificationPreference NotificationPreference?
+  bookingHistories  BookingHistory[]
+}
+
+model LoginAttempt {
+  id           Int      @id @default(autoincrement())
+  user         User     @relation(fields: [userId], references: [id])
+  userId       Int
+  success      Boolean
+  attempted_at DateTime @default(now())
+}
+
+model Course {
+  id            Int             @id @default(autoincrement())
+  name          String          @unique
+  subject_area  String
+
+  studentInterests StudentInterest[]
+  tutorCourses     TutorCourse[]
+  tutoringSessions TutoringSession[]
+}
+
+model StudentProfile {
+  id          Int               @id @default(autoincrement())
+  user        User              @relation(fields: [userId], references: [id])
+  userId      Int               @unique
+  university  String
+  career      String
+  study_year  Int
+  bio         String?
+
+  interests   StudentInterest[]
+  bookings    Booking[]
+  feedbacks   Feedback[]
+  favorites   FavoriteTutor[]
+}
+
+model TutorProfile {
+  id             Int             @id @default(autoincrement())
+  user           User            @relation(fields: [userId], references: [id])
+  userId         Int             @unique
+  bio            String
+  average_rating Float           @default(0.0)
+
+  tutorCourses   TutorCourse[]
+  availabilities AvailabilityBlock[]
+  sessions       TutoringSession[]
+  favorites      FavoriteTutor[]
+}
+
+model StudentInterest {
+  id                  Int            @id @default(autoincrement())
+  studentProfile      StudentProfile @relation(fields: [studentProfileId], references: [id])
+  studentProfileId    Int
+  course              Course         @relation(fields: [courseId], references: [id])
+  courseId            Int
+}
+
+model TutorCourse {
+  id         Int         @id @default(autoincrement())
+  tutor      TutorProfile @relation(fields: [tutorId], references: [id])
+  tutorId    Int
+  course     Course      @relation(fields: [courseId], references: [id])
+  courseId   Int
+  level      String
+  grade      Float
+}
+
+model AvailabilityBlock {
+  id          Int          @id @default(autoincrement())
+  tutor       TutorProfile @relation(fields: [tutorId], references: [id])
+  tutorId     Int
+  day_of_week DayOfWeek
+  start_time  DateTime
+  end_time    DateTime
+}
+
+model TutoringSession {
+  id          Int          @id @default(autoincrement())
+  tutor       TutorProfile @relation(fields: [tutorId], references: [id])
+  tutorId     Int
+  course      Course       @relation(fields: [courseId], references: [id])
+  courseId    Int
+  title       String
+  description String
+  date        DateTime
+  start_time  DateTime
+  end_time    DateTime
+  location    String
+
+  bookings    Booking[]
+  feedbacks   Feedback[]
+}
+
+model Booking {
+  id                 Int             @id @default(autoincrement())
+  session            TutoringSession @relation(fields: [sessionId], references: [id])
+  sessionId          Int
+  studentProfile     StudentProfile  @relation(fields: [studentProfileId], references: [id])
+  studentProfileId   Int
+  status             BookingStatus
+  created_at         DateTime        @default(now())
+
+  history            BookingHistory[]
+}
+
+model BookingHistory {
+  id            Int      @id @default(autoincrement())
+  booking       Booking  @relation(fields: [bookingId], references: [id])
+  bookingId     Int
+  performed_by  User     @relation(fields: [performedById], references: [id])
+  performedById Int
+  action        String
+  timestamp     DateTime @default(now())
+}
+
+model Feedback {
+  id         Int             @id @default(autoincrement())
+  session    TutoringSession @relation(fields: [sessionId], references: [id])
+  sessionId  Int
+  author     StudentProfile  @relation(fields: [authorId], references: [id])
+  authorId   Int
+  rating     Int
+  comment    String?
+  is_public  Boolean         @default(true)
+  created_at DateTime        @default(now())
+}
+
+model FavoriteTutor {
+  id               Int            @id @default(autoincrement())
+  studentProfile   StudentProfile @relation(fields: [studentProfileId], references: [id])
+  studentProfileId Int
+  tutorProfile     TutorProfile   @relation(fields: [tutorProfileId], references: [id])
+  tutorProfileId   Int
+  created_at       DateTime       @default(now())
+}
+
+model UserActivity {
+  id            Int      @id @default(autoincrement())
+  user          User     @relation(fields: [userId], references: [id])
+  userId        Int
+  activity_type String
+  reference_id  Int?
+  metadata      Json?
+  created_at    DateTime @default(now())
+}
+
+model Notification {
+  id         Int      @id @default(autoincrement())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int
+  type       String
+  payload    Json
+  read_at    DateTime?
+  created_at DateTime @default(now())
+}
+
+model NotificationPreference {
+  id                    Int    @id @default(autoincrement())
+  user                  User   @relation(fields: [userId], references: [id])
+  userId                Int    @unique
+  email_on_booking      Boolean @default(true)
+  email_on_cancellation Boolean @default(true)
+  inapp_on_booking      Boolean @default(true)
+  push_on_booking       Boolean @default(true)
+  daily_summary         Boolean @default(false)
+}
