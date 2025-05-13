@@ -16,8 +16,8 @@ Backend de la plataforma **LinkUDP**, desarrollada con NestJS, Prisma y PostgreS
 
 ### 1. Clona el repositorio
 ```bash
-git clone https://github.com/tu-usuario/linkudp-backend.git
-cd linkudp-backend
+git clone https://github.com/DTC04/LinkUDP.git
+cd linkUDP/Backend
 ```
 ### 2. Instala las dependencias
 ```bash
@@ -35,16 +35,22 @@ Ejemplo de contenido:
 env
 DATABASE_URL="postgresql://postgres:admin@localhost:5432/linkudp"
 ```
-## 🧩 Configurar Prisma
-### 1. Inicializa Prisma (solo una vez)
+## Revisión puerto 5432
+### Revisar si hay una Bases de datos en el puerto 5432
 ```bash
-npx prisma init
+sudo lsof -i :5432
 ```
-### 2. Aplica migraciones
+### Detener proceso en el puerto
+```bash
+sudo systemctl stop postgresql
+
+```
+## 🧩 Configurar Prisma
+### 1. Aplica migraciones
 ```bash
 npx prisma migrate dev --name init
 ```
-### 3. Visualiza con Prisma Studio (opcional)
+### 2. Visualiza con Prisma Studio (opcional)
 ```bash
 npx prisma studio
 ```
