@@ -19,16 +19,21 @@ Backend de la plataforma **LinkUDP**, desarrollada con NestJS, Prisma y PostgreS
 git clone https://github.com/DTC04/LinkUDP.git
 cd linkUDP/Backend
 ```
-### 2. Instala las dependencias
+### 2. Para usar la misma versión de Node.js:
+```bash
+nvm install
+nvm use
+```
+### 3. Instala las dependencias
 ```bash
 npm install
 ```
-### 3. Levanta PostgreSQL con Docker Compose
+### 4. Levanta PostgreSQL con Docker Compose
 
 ```bash
 docker-compose up -d
 ```
-### 4. Crea el archivo .env basado en .env.example
+### 5. Crea el archivo .env basado en .env.example
 ```bash
 cp .env.example .env
 Ejemplo de contenido:
