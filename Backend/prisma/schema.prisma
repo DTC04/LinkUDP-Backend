@@ -16,6 +16,7 @@ enum BookingStatus {
   PENDING
   CONFIRMED
   CANCELLED
+  AVAILABLE // Nuevo estado para tutorías ofrecidas
 }
 
 enum DayOfWeek {
@@ -113,6 +114,8 @@ model TutorCourse {
   courseId   Int
   level      String
   grade      Float
+
+  @@unique([tutorId, courseId])
 }
 
 model AvailabilityBlock {
@@ -132,10 +135,14 @@ model TutoringSession {
   courseId    Int
   title       String
   description String
-  date        DateTime
+  date        DateTime // Considerar si esto es necesario o se puede inferir de start_time
   start_time  DateTime
   end_time    DateTime
-  location    String
+  status      BookingStatus @default(AVAILABLE) // Estado de la tutoría
+  location    String? // Puede ser opcional si es online
+  notes       String? // Notas adicionales para la tutoría
+  created_at  DateTime     @default(now())
+  updated_at  DateTime     @updatedAt
 
   bookings    Booking[]
   feedbacks   Feedback[]
