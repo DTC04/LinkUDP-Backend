@@ -1,12 +1,19 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config'; 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TutoriasModule } from './tutorias/tutorias.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [TutoriasModule, PrismaModule], // Agrega TutoriasModule y PrismaModule aquí
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }), 
+    TutoriasModule,
+    PrismaModule,
+    AuthModule,
+  ],
   controllers: [AppController],
-  providers: [AppService], // PrismaService ya es global gracias a @Global() en PrismaModule
+  providers: [AppService],
 })
 export class AppModule {}
