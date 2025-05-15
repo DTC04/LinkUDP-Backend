@@ -14,6 +14,7 @@ const app_service_1 = require("./app.service");
 const tutorias_module_1 = require("./tutorias/tutorias.module");
 const prisma_module_1 = require("./prisma/prisma.module");
 const auth_module_1 = require("./auth/auth.module");
+const users_module_1 = require("./users/users.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -24,6 +25,7 @@ exports.AppModule = AppModule = __decorate([
             tutorias_module_1.TutoriasModule,
             prisma_module_1.PrismaModule,
             auth_module_1.AuthModule,
+            users_module_1.UsersModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
