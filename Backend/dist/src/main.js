@@ -6,6 +6,7 @@ const swagger_1 = require("@nestjs/swagger");
 const common_1 = require("@nestjs/common");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
+    app.enableCors();
     const config = new swagger_1.DocumentBuilder()
         .setTitle('API de Tutorías LinkUDP')
         .setDescription('Documentación de la API para la gestión de tutorías.')

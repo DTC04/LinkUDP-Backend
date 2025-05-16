@@ -37,8 +37,31 @@ let AuthService = class AuthService {
                 role: dto.role,
             },
         });
+        if (dto.role === 'STUDENT' || dto.role === 'BOTH') {
+            await this.prisma.studentProfile.create({
+                data: {
+                    userId: user.id,
+                    university: '',
+                    career: '',
+                    study_year: 0,
+                },
+            });
+        }
+        if (dto.role === 'TUTOR' || dto.role === 'BOTH') {
+            await this.prisma.tutorProfile.create({
+                data: {
+                    userId: user.id,
+                    bio: '',
+                },
+            });
+        }
         const { password, ...safeUser } = user;
-        return safeUser;
+        const token = this.jwt.sign({
+            sub: user.id,
+            email: user.email,
+            role: user.role,
+        });
+        return { user: safeUser, access_token: token };
     }
     async login(dto) {
         const user = await this.prisma.user.findUnique({

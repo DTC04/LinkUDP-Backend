@@ -9,6 +9,7 @@ datasource db {
 
 enum Role {
   STUDENT
+  TUTOR
   BOTH
 }
 
@@ -30,26 +31,29 @@ enum DayOfWeek {
 }
 
 model User {
-  id                Int       @id @default(autoincrement())
+  id                Int      @id @default(autoincrement())
   full_name         String
-  email             String    @unique
-  password          String?
+  email             String   @unique
+  password          String? // Mantenemos opcional por si hay OAuth
   oauth_provider    String?
   oauth_provider_id String?
-  role              Role
+  role              Role // STUDENT, TUTOR, BOTH
   photo_url         String?
-  email_verified    Boolean   @default(false)
-  created_at        DateTime  @default(now())
-  updated_at        DateTime  @updatedAt
+  email_verified    Boolean  @default(false)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
 
-  studentProfile    StudentProfile?
-  tutorProfile      TutorProfile?
+  // Perfiles
+  studentProfile         StudentProfile?
+  tutorProfile           TutorProfile?
+  // Otros campos como LoginAttempts, UserActivity, Notifications ya existen...
+  LoginAttempt           LoginAttempt[]
+  BookingHistory         BookingHistory[] // Asumiendo que es el usuario quien realiza la acción
+  UserActivity           UserActivity[]
+  Notification           Notification[]
+  NotificationPreference NotificationPreference?
 
-  loginAttempts     LoginAttempt[]
-  userActivities    UserActivity[]
-  notifications     Notification[]
-  notificationPreference NotificationPreference?
-  bookingHistories  BookingHistory[]
+  @@map("User") // Asegúrate que el nombre de la tabla sea consistente
 }
 
 model LoginAttempt {
@@ -61,9 +65,9 @@ model LoginAttempt {
 }
 
 model Course {
-  id            Int             @id @default(autoincrement())
-  name          String          @unique
-  subject_area  String
+  id           Int    @id @default(autoincrement())
+  name         String @unique
+  subject_area String
 
   studentInterests StudentInterest[]
   tutorCourses     TutorCourse[]
@@ -71,49 +75,63 @@ model Course {
 }
 
 model StudentProfile {
-  id          Int               @id @default(autoincrement())
-  user        User              @relation(fields: [userId], references: [id])
-  userId      Int               @unique
-  university  String
-  career      String
-  study_year  Int
-  bio         String?
+  id         Int     @id @default(autoincrement())
+  userId     Int     @unique
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade) // onDelete Cascade
+  university String
+  career     String
+  study_year Int
+  bio        String? // Ya existe, hacerlo opcional si no es mandatorio al crear
 
-  interests   StudentInterest[]
-  bookings    Booking[]
-  feedbacks   Feedback[]
-  favorites   FavoriteTutor[]
+  interests      StudentInterest[]
+  bookings       Booking[]
+  feedbacks      Feedback[] // Estudiante que da feedback
+  favoriteTutors FavoriteTutor[]
+
+  @@map("StudentProfile")
 }
 
 model TutorProfile {
-  id             Int             @id @default(autoincrement())
-  user           User            @relation(fields: [userId], references: [id])
-  userId         Int             @unique
-  bio            String
-  average_rating Float           @default(0.0)
+  id             Int    @id @default(autoincrement())
+  userId         Int    @unique
+  user           User   @relation(fields: [userId], references: [id], onDelete: Cascade) // onDelete Cascade
+  bio            String // Ya existe, podría ser la descripción general del tutor
+  average_rating Float  @default(0.0)
 
-  tutorCourses   TutorCourse[]
-  availabilities AvailabilityBlock[]
-  sessions       TutoringSession[]
-  favorites      FavoriteTutor[]
+  // Nuevos campos para la HU
+  cv_url                 String? // URL al CV (ej. LinkedIn, Google Drive) o ruta si se almacena localmente
+  experience_details     String? // Texto más extenso para la experiencia, podría ser Markdown
+  tutoring_contact_email String? // Email específico para tutorías, si es diferente al de la cuenta
+  tutoring_phone         String? // Teléfono específico para tutorías, opcional
+
+  // Relaciones existentes
+  courses          TutorCourse[]
+  availability     AvailabilityBlock[]
+  tutoringSessions TutoringSession[]
+  favoritedBy      FavoriteTutor[]
+
+  @@map("TutorProfile")
 }
 
 model StudentInterest {
-  id                  Int            @id @default(autoincrement())
-  studentProfile      StudentProfile @relation(fields: [studentProfileId], references: [id])
-  studentProfileId    Int
-  course              Course         @relation(fields: [courseId], references: [id])
-  courseId            Int
+  id               Int            @id @default(autoincrement())
+  studentProfileId Int
+  studentProfile   StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+  courseId         Int
+  course           Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([studentProfileId, courseId]) // Evitar intereses duplicados
+  @@map("StudentInterest")
 }
 
 model TutorCourse {
-  id         Int         @id @default(autoincrement())
-  tutor      TutorProfile @relation(fields: [tutorId], references: [id])
-  tutorId    Int
-  course     Course      @relation(fields: [courseId], references: [id])
-  courseId   Int
-  level      String
-  grade      Float
+  id       Int          @id @default(autoincrement())
+  tutor    TutorProfile @relation(fields: [tutorId], references: [id])
+  tutorId  Int
+  course   Course       @relation(fields: [courseId], references: [id])
+  courseId Int
+  level    String
+  grade    Float
 
   @@unique([tutorId, courseId])
 }
@@ -128,10 +146,10 @@ model AvailabilityBlock {
 }
 
 model TutoringSession {
-  id          Int          @id @default(autoincrement())
-  tutor       TutorProfile @relation(fields: [tutorId], references: [id])
+  id          Int           @id @default(autoincrement())
+  tutor       TutorProfile  @relation(fields: [tutorId], references: [id])
   tutorId     Int
-  course      Course       @relation(fields: [courseId], references: [id])
+  course      Course        @relation(fields: [courseId], references: [id])
   courseId    Int
   title       String
   description String
@@ -141,23 +159,23 @@ model TutoringSession {
   status      BookingStatus @default(AVAILABLE) // Estado de la tutoría
   location    String? // Puede ser opcional si es online
   notes       String? // Notas adicionales para la tutoría
-  created_at  DateTime     @default(now())
-  updated_at  DateTime     @updatedAt
+  created_at  DateTime      @default(now())
+  updated_at  DateTime      @updatedAt
 
-  bookings    Booking[]
-  feedbacks   Feedback[]
+  bookings  Booking[]
+  feedbacks Feedback[]
 }
 
 model Booking {
-  id                 Int             @id @default(autoincrement())
-  session            TutoringSession @relation(fields: [sessionId], references: [id])
-  sessionId          Int
-  studentProfile     StudentProfile  @relation(fields: [studentProfileId], references: [id])
-  studentProfileId   Int
-  status             BookingStatus
-  created_at         DateTime        @default(now())
+  id               Int             @id @default(autoincrement())
+  session          TutoringSession @relation(fields: [sessionId], references: [id])
+  sessionId        Int
+  studentProfile   StudentProfile  @relation(fields: [studentProfileId], references: [id])
+  studentProfileId Int
+  status           BookingStatus
+  created_at       DateTime        @default(now())
 
-  history            BookingHistory[]
+  history BookingHistory[]
 }
 
 model BookingHistory {
@@ -202,19 +220,19 @@ model UserActivity {
 }
 
 model Notification {
-  id         Int      @id @default(autoincrement())
-  user       User     @relation(fields: [userId], references: [id])
+  id         Int       @id @default(autoincrement())
+  user       User      @relation(fields: [userId], references: [id])
   userId     Int
   type       String
   payload    Json
   read_at    DateTime?
-  created_at DateTime @default(now())
+  created_at DateTime  @default(now())
 }
 
 model NotificationPreference {
-  id                    Int    @id @default(autoincrement())
-  user                  User   @relation(fields: [userId], references: [id])
-  userId                Int    @unique
+  id                    Int     @id @default(autoincrement())
+  user                  User    @relation(fields: [userId], references: [id])
+  userId                Int     @unique
   email_on_booking      Boolean @default(true)
   email_on_cancellation Boolean @default(true)
   inapp_on_booking      Boolean @default(true)

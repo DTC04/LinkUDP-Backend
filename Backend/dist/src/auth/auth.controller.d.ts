@@ -5,16 +5,19 @@ export declare class AuthController {
     private readonly authService;
     constructor(authService: AuthService);
     register(dto: RegisterDto): Promise<{
-        id: number;
-        full_name: string;
-        email: string;
-        oauth_provider: string | null;
-        oauth_provider_id: string | null;
-        role: import(".prisma/client").$Enums.Role;
-        photo_url: string | null;
-        email_verified: boolean;
-        created_at: Date;
-        updated_at: Date;
+        user: {
+            id: number;
+            full_name: string;
+            email: string;
+            oauth_provider: string | null;
+            oauth_provider_id: string | null;
+            role: import(".prisma/client").$Enums.Role;
+            photo_url: string | null;
+            email_verified: boolean;
+            created_at: Date;
+            updated_at: Date;
+        };
+        access_token: string;
     }>;
     login(dto: LoginDto): Promise<{
         access_token: string;

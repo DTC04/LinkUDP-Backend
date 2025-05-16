@@ -15,6 +15,7 @@ var Role;
 (function (Role) {
     Role["STUDENT"] = "STUDENT";
     Role["BOTH"] = "BOTH";
+    Role["TUTOR"] = "TUTOR";
 })(Role || (Role = {}));
 class RegisterDto {
     full_name;
