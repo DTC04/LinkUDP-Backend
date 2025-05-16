@@ -9,20 +9,20 @@ async function bootstrap() {
   // Opción 1: Configuración básica (permite solicitudes de cualquier origen)
   // Ideal para empezar y para desarrollo local.
   // Considera opciones más restrictivas para producción.
-  app.enableCors();
+  // app.enableCors();
 
   // Opción 2: Configuración CORS más específica (RECOMENDADO para producción)
-  /*
+
   app.enableCors({
-    origin: 'http://localhost:XXXX', // Reemplaza XXXX con el puerto de tu frontend
-                                     // o un array de orígenes permitidos: ['http://localhost:3001', 'https://tu-dominio-frontend.com']
+    origin: 'http://localhost:3001', // Reemplaza XXXX con el puerto de tu frontend
+    // o un array de orígenes permitidos: ['http://localhost:3001', 'https://tu-dominio-frontend.com']
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'], // Agrega las cabeceras que tu frontend envía
     credentials: true, // Si necesitas enviar cookies o cabeceras de autorización
     preflightContinue: false,
     optionsSuccessStatus: 204,
   });
-  */
+
   // Configuración de Swagger
   const config = new DocumentBuilder()
     .setTitle('API de Tutorías LinkUDP')

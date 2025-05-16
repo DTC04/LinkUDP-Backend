@@ -6,7 +6,14 @@ const swagger_1 = require("@nestjs/swagger");
 const common_1 = require("@nestjs/common");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
-    app.enableCors();
+    app.enableCors({
+        origin: 'http://localhost:3001',
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+        credentials: true,
+        preflightContinue: false,
+        optionsSuccessStatus: 204,
+    });
     const config = new swagger_1.DocumentBuilder()
         .setTitle('API de Tutorías LinkUDP')
         .setDescription('Documentación de la API para la gestión de tutorías.')
