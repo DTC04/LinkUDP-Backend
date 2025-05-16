@@ -1,6 +1,6 @@
 import { IsEmail, IsString, IsEnum, MinLength } from 'class-validator';
 
-enum Role {
+export enum Role { // Añadido "export"
   STUDENT = 'STUDENT',
   BOTH = 'BOTH',
   TUTOR = 'TUTOR',
@@ -18,5 +18,5 @@ export class RegisterDto {
   password: string;
 
   @IsEnum(Role)
-  role: 'STUDENT' | 'TUTOR' | 'BOTH';
+  role: Role;
 }

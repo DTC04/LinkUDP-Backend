@@ -9,14 +9,14 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RegisterDto = void 0;
+exports.RegisterDto = exports.Role = void 0;
 const class_validator_1 = require("class-validator");
 var Role;
 (function (Role) {
     Role["STUDENT"] = "STUDENT";
     Role["BOTH"] = "BOTH";
     Role["TUTOR"] = "TUTOR";
-})(Role || (Role = {}));
+})(Role || (exports.Role = Role = {}));
 class RegisterDto {
     full_name;
     email;

@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const register_dto_1 = require("./dto/register.dto");
 const bcrypt = require("bcrypt");
 const jwt_1 = require("@nestjs/jwt");
 let AuthService = class AuthService {
@@ -37,7 +38,7 @@ let AuthService = class AuthService {
                 role: dto.role,
             },
         });
-        if (dto.role === 'STUDENT' || dto.role === 'BOTH') {
+        if (dto.role === register_dto_1.Role.STUDENT || dto.role === register_dto_1.Role.BOTH) {
             await this.prisma.studentProfile.create({
                 data: {
                     userId: user.id,
@@ -47,7 +48,7 @@ let AuthService = class AuthService {
                 },
             });
         }
-        if (dto.role === 'TUTOR' || dto.role === 'BOTH') {
+        if (dto.role === register_dto_1.Role.TUTOR || dto.role === register_dto_1.Role.BOTH) {
             await this.prisma.tutorProfile.create({
                 data: {
                     userId: user.id,
@@ -79,7 +80,8 @@ let AuthService = class AuthService {
             email: user.email,
             role: user.role,
         });
-        return { access_token: token };
+        const { password: loginPassword, ...safeLoggedInUser } = user;
+        return { user: safeLoggedInUser, access_token: token };
     }
 };
 exports.AuthService = AuthService;

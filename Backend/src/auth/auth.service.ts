@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { RegisterDto } from './dto/register.dto';
+import { RegisterDto, Role } from './dto/register.dto'; // Importado Role
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -33,32 +33,38 @@ export class AuthService {
     });
 
     // Crear perfiles basados en el rol
-    if (dto.role === 'STUDENT' || dto.role === 'BOTH') {
+    if (dto.role === Role.STUDENT || dto.role === Role.BOTH) {
+      // Usando Role.STUDENT y Role.BOTH
       await this.prisma.studentProfile.create({
         data: {
           userId: user.id,
-          university: '',
-          career: '',
-          study_year: 0,
+          university: '', // Valor por defecto
+          career: '', // Valor por defecto
+          study_year: 0, // Valor por defecto
+          // bio puede ser opcional o llenado después
         },
       });
     }
 
-    if (dto.role === 'TUTOR' || dto.role === 'BOTH') {
+    if (dto.role === Role.TUTOR || dto.role === Role.BOTH) {
+      // Usando Role.TUTOR y Role.BOTH
       await this.prisma.tutorProfile.create({
         data: {
           userId: user.id,
-          bio: '',
+          bio: '', // Bio inicial vacía o un placeholder
+          // cv_url, experience_details, etc., son opcionales y se pueden llenar después
         },
       });
     }
 
+    // No retornamos el password por seguridad
     const { password, ...safeUser } = user;
 
+    // Generar token también en el registro
     const token = this.jwt.sign({
       sub: user.id,
       email: user.email,
-      role: user.role,
+      role: user.role, // Se usa el user.role del objeto User recién creado/leído
     });
 
     return { user: safeUser, access_token: token };
@@ -79,12 +85,16 @@ export class AuthService {
       return null;
     }
 
+    // En el login, también devolvemos el usuario junto con el token para consistencia
+    // y para que el frontend pueda tener acceso inmediato a los datos del usuario si es necesario.
     const token = this.jwt.sign({
       sub: user.id,
       email: user.email,
       role: user.role,
     });
 
-    return { access_token: token };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: loginPassword, ...safeLoggedInUser } = user; // Renombrar para evitar conflicto de scope si es necesario
+    return { user: safeLoggedInUser, access_token: token };
   }
 }
