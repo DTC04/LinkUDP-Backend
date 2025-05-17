@@ -15,6 +15,7 @@ const tutorias_module_1 = require("./tutorias/tutorias.module");
 const prisma_module_1 = require("./prisma/prisma.module");
 const auth_module_1 = require("./auth/auth.module");
 const profile_module_1 = require("./profile/profile.module");
+const availability_module_1 = require("./availability/availability.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -25,6 +26,7 @@ exports.AppModule = AppModule = __decorate([
             tutorias_module_1.TutoriasModule,
             prisma_module_1.PrismaModule,
             auth_module_1.AuthModule,
+            availability_module_1.AvailabilityModule,
             profile_module_1.ProfileModule,
         ],
         controllers: [app_controller_1.AppController],

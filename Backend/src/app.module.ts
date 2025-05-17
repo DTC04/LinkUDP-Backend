@@ -6,6 +6,7 @@ import { TutoriasModule } from './tutorias/tutorias.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { ProfileModule } from './profile/profile.module';
+import { AvailabilityModule } from './availability/availability.module';//a
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { ProfileModule } from './profile/profile.module';
     TutoriasModule,
     PrismaModule,
     AuthModule,
+    AvailabilityModule,//a
     ProfileModule,
   ],
   controllers: [AppController],

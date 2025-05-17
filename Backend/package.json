@@ -39,7 +39,8 @@
     "class-validator": "^0.14.2",
     "globals": "^16.1.0",
     "passport": "^0.7.0",
-    "passport-jwt": "^4.0.1"
+    "passport-jwt": "^4.0.1",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@faker-js/faker": "^9.7.0",
