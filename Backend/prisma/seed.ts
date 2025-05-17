@@ -282,10 +282,10 @@ async function main() {
   await prisma.bookingHistory.deleteMany({});
   await prisma.booking.deleteMany({});
   await prisma.feedback.deleteMany({});
-  await prisma.tutoringSession.deleteMany({});
-  console.log('Deleted existing bookings, feedbacks, and tutoring sessions.');
-  await prisma.tutorCourse.deleteMany({});
-  console.log('Deleted existing tutor courses.');
+  // await prisma.tutoringSession.deleteMany({}); // Comentado para no borrar tutorías existentes
+  console.log('Deleted existing bookings and feedbacks. Tutoring sessions and tutor courses are preserved unless re-seeded specifically.');
+  // await prisma.tutorCourse.deleteMany({}); // Comentado también si las tutorías dependen de estos y no se quieren borrar masivamente
+  console.log('Tutor courses are preserved.');
   // Considerar si se deben borrar también Users y TutorProfiles que no vengan de output.json
   // o si se deben borrar todos los Users/TutorProfiles/Courses y recrearlos.
   // Por ahora, los upserts manejarán la creación o actualización.
@@ -293,14 +293,20 @@ async function main() {
   const createdCoursesMap = new Map<string, Course>();
   const createdTutorsMap = new Map<string, { user: User, profile: PrismaTutorProfile }>();
 
-  const outputJsonProcessed = await seedCoursesAndTutorsFromOutputJson(createdCoursesMap, createdTutorsMap);
+  // const outputJsonProcessed = await seedCoursesAndTutorsFromOutputJson(createdCoursesMap, createdTutorsMap); // Comentado para no crear tutores/cursos desde output.json
+  const outputJsonProcessed = false; // Asumir que no se procesó
+  console.log('Skipped seeding courses and tutors from output.json.');
 
   // Si output.json no existía o no se procesó, o para asegurar un mínimo de datos.
-  const minTotalCourses = 20; 
-  const minTotalTutors = 30;  
-  await ensureRandomCoursesAndTutors(minTotalCourses, minTotalTutors, createdCoursesMap, createdTutorsMap);
+  const minTotalCourses = 0; // No crear cursos aleatorios
+  const minTotalTutors = 0;  // No crear tutores aleatorios
+  // await ensureRandomCoursesAndTutors(minTotalCourses, minTotalTutors, createdCoursesMap, createdTutorsMap); // Comentado para no crear tutores/cursos aleatorios
+  console.log('Skipped ensuring random courses and tutors.');
   
-  const sessionsCreated = await seedTutoringSessions(createdTutorsMap);
+  // const sessionsCreated = await seedTutoringSessions(createdTutorsMap); // Comentado para no crear nuevas tutorías de prueba
+  const sessionsCreated = 0; // Asumir 0 para el log
+  console.log('Skipped creating new seed tutoring sessions.');
+
 
   console.log(`Seeding finished. Total courses in DB: ${await prisma.course.count()}, Total tutors in DB: ${await prisma.tutorProfile.count()}, Tutoring sessions created in this run: ${sessionsCreated}.`);
   

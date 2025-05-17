@@ -123,6 +123,7 @@ __decorate([
     __metadata("design:type", String)
 ], AvailabilityBlockViewDto.prototype, "end_time", void 0);
 class TutorProfileViewDto {
+    id;
     bio;
     average_rating;
     cv_url;
@@ -132,6 +133,10 @@ class TutorProfileViewDto {
     courses;
     availability;
 }
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], TutorProfileViewDto.prototype, "id", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)

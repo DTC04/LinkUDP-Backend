@@ -58,6 +58,8 @@ class AvailabilityBlockViewDto {
 
 class TutorProfileViewDto {
   @ApiProperty()
+  id: number; 
+  @ApiProperty()
   bio: string;
   @ApiProperty()
   average_rating: number;

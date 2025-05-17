@@ -75,6 +75,7 @@ let ProfileService = class ProfileService {
         }
         if (user.tutorProfile) {
             response.tutorProfile = {
+                id: user.tutorProfile.id,
                 bio: user.tutorProfile.bio,
                 average_rating: user.tutorProfile.average_rating,
                 cv_url: user.tutorProfile.cv_url,

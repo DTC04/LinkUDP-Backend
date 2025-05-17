@@ -1,32 +1,33 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable, UnauthorizedException, Logger } from '@nestjs/common'; // Importa Logger
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common'; 
 import { PrismaService } from '../prisma/prisma.service';
-import { Role } from '@prisma/client'; // Asegúrate que Role esté correctamente importado si lo usas en el payload
+import { Role } from '@prisma/client';
+import { ConfigService } from '@nestjs/config'; 
 
-// Define una interfaz para el payload del JWT para mayor claridad y type safety
 interface JwtPayload {
   sub: number;
   email: string;
   role: Role;
-  // iat y exp son propiedades estándar, puedes añadirlas si necesitas acceder a ellas
-  // iat?: number;
-  // exp?: number;
+  
 }
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   private readonly logger = new Logger(JwtStrategy.name); // Instancia del Logger
 
-  constructor(private readonly prisma: PrismaService) {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly configService: ConfigService, // Inyectar ConfigService
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false, // Es importante que sea false para rechazar tokens expirados
-      secretOrKey: process.env.JWT_SECRET || 'defaultSecret', // Asegúrate que esta clave coincida con la usada en JwtModule
+      secretOrKey: configService.get<string>('JWT_SECRET') || 'supersecret', // Usar ConfigService
     });
     this.logger.log(
       `JwtStrategy initialized. Using secret: ${
-        process.env.JWT_SECRET ? 'from ENV (****)' : "'defaultSecret'"
+        configService.get<string>('JWT_SECRET') ? 'from ConfigService (****)' : "'supersecret'"
       }. ignoreExpiration: false`,
     );
   }

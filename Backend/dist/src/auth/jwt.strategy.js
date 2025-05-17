@@ -15,17 +15,20 @@ const passport_jwt_1 = require("passport-jwt");
 const passport_1 = require("@nestjs/passport");
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const config_1 = require("@nestjs/config");
 let JwtStrategy = JwtStrategy_1 = class JwtStrategy extends (0, passport_1.PassportStrategy)(passport_jwt_1.Strategy) {
     prisma;
+    configService;
     logger = new common_1.Logger(JwtStrategy_1.name);
-    constructor(prisma) {
+    constructor(prisma, configService) {
         super({
             jwtFromRequest: passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
-            secretOrKey: process.env.JWT_SECRET || 'defaultSecret',
+            secretOrKey: configService.get('JWT_SECRET') || 'supersecret',
         });
         this.prisma = prisma;
-        this.logger.log(`JwtStrategy initialized. Using secret: ${process.env.JWT_SECRET ? 'from ENV (****)' : "'defaultSecret'"}. ignoreExpiration: false`);
+        this.configService = configService;
+        this.logger.log(`JwtStrategy initialized. Using secret: ${configService.get('JWT_SECRET') ? 'from ConfigService (****)' : "'supersecret'"}. ignoreExpiration: false`);
     }
     async validate(payload) {
         this.logger.log(`Validating JWT payload: ${JSON.stringify(payload)}`);
@@ -51,6 +54,7 @@ let JwtStrategy = JwtStrategy_1 = class JwtStrategy extends (0, passport_1.Passp
 exports.JwtStrategy = JwtStrategy;
 exports.JwtStrategy = JwtStrategy = JwtStrategy_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        config_1.ConfigService])
 ], JwtStrategy);
 //# sourceMappingURL=jwt.strategy.js.map

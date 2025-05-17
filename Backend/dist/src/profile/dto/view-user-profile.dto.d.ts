@@ -30,6 +30,7 @@ declare class AvailabilityBlockViewDto {
     end_time: string;
 }
 declare class TutorProfileViewDto {
+    id: number;
     bio: string;
     average_rating: number;
     cv_url: string | null;
