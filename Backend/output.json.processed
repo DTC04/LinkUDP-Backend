@@ -1,0 +1,1402 @@
+[
+    {
+        "NOMBRE": "GESTIÓN CADENA DE ABAST. & OPERACIONES",
+        "SECC": "1",
+        "Profesor(a)": "Alejandro Vargas"
+    },
+    {
+        "NOMBRE": "GESTIÓN EN LA INDUSTRIA MINERA",
+        "SECC": "1",
+        "Profesor(a)": "Dagoberto Pérez"
+    },
+    {
+        "NOMBRE": "DISEÑO EN HORMIGÓN",
+        "SECC": "1",
+        "Profesor(a)": "Sebastián Díaz"
+    },
+    {
+        "NOMBRE": "TÓPICOS DE LOG. Y SIS.  DE DIS. DE CARGA",
+        "SECC": "1",
+        "Profesor(a)": "Rodrigo Garrido"
+    },
+    {
+        "NOMBRE": "ARQUITECTURA Y ORGANIZ DE COMPUTADORES",
+        "SECC": "1",
+        "Profesor(a)": "Pablo Sánchez"
+    },
+    {
+        "NOMBRE": "CÁLCULO II",
+        "SECC": "10",
+        "Profesor(a)": "Juan Rossel"
+    },
+    {
+        "NOMBRE": "CÁLCULO III",
+        "SECC": "5",
+        "Profesor(a)": "Matthieu Marechal"
+    },
+    {
+        "NOMBRE": "CÁLCULO II",
+        "SECC": "7",
+        "Profesor(a)": "Andrea Casado"
+    },
+    {
+        "NOMBRE": "APLICACIÓN DEL DERECHO LABORAL",
+        "SECC": "1",
+        "Profesor(a)": "José Antonio Díaz"
+    },
+    {
+        "NOMBRE": "ÁLGEBRA LINEAL",
+        "SECC": "4",
+        "Profesor(a)": "Juan Rossel"
+    },
+    {
+        "NOMBRE": "PROBABILIDADES Y ESTADÍSTICA",
+        "SECC": "1",
+        "Profesor(a)": "Miguel Guerrero"
+    },
+    {
+        "NOMBRE": "QUÍMICA",
+        "SECC": "1",
+        "Profesor(a)": "Nora Reyes"
+    },
+    {
+        "NOMBRE": "INGENIERIA ECONÓMICA",
+        "SECC": "1",
+        "Profesor(a)": "Roberto Ortiz"
+    },
+    {
+        "NOMBRE": "SISTEMAS OPERATIVOS",
+        "SECC": "1",
+        "Profesor(a)": "Martín Gutierrez"
+    },
+    {
+        "NOMBRE": "MECÁNICA DE SÓLIDOS",
+        "SECC": "1",
+        "Profesor(a)": "Pablo González"
+    },
+    {
+        "NOMBRE": "GESTIÓN DE PROCESOS",
+        "SECC": "1",
+        "Profesor(a)": "Luis Gaete"
+    },
+    {
+        "NOMBRE": "MICROECONOMÍA",
+        "SECC": "2",
+        "Profesor(a)": "Karina Véliz"
+    },
+    {
+        "NOMBRE": "TERMODINÁMICA",
+        "SECC": "2",
+        "Profesor(a)": "Masoud Behzad"
+    },
+    {
+        "NOMBRE": "CALOR Y ONDAS",
+        "SECC": "1",
+        "Profesor(a)": "Sidney Villagrán"
+    },
+    {
+        "NOMBRE": "REDES MÓVILES CELULARES",
+        "SECC": "1",
+        "Profesor(a)": "Roberto Carvajal"
+    },
+    {
+        "NOMBRE": "CONTABILIDAD Y COSTOS",
+        "SECC": "4",
+        "Profesor(a)": "Roberto Ortiz"
+    },
+    {
+        "NOMBRE": "EVALUACIÓN DE PROYECTOS",
+        "SECC": "3",
+        "Profesor(a)": "Eduardo Faivovich"
+    },
+    {
+        "NOMBRE": "ÁLGEBRA LINEAL",
+        "SECC": "3",
+        "Profesor(a)": "Andrea Casado"
+    },
+    {
+        "NOMBRE": "MODELOS ESTOCÁSTICOS",
+        "SECC": "1",
+        "Profesor(a)": "Renny Márquez"
+    },
+    {
+        "NOMBRE": "MODELOS ESTOCÁSTICOS",
+        "SECC": "3",
+        "Profesor(a)": "Renny Márquez"
+    },
+    {
+        "NOMBRE": "CONTABILIDAD Y COSTOS",
+        "SECC": "1",
+        "Profesor(a)": "Ema Cortés"
+    },
+    {
+        "NOMBRE": "CÁLCULO III",
+        "SECC": "2",
+        "Profesor(a)": "Emilio Marti"
+    },
+    {
+        "NOMBRE": "PROBABILIDADES Y ESTADÍSTICAS",
+        "SECC": "1",
+        "Profesor(a)": "Paulina Quilodrán"
+    },
+    {
+        "NOMBRE": "DISEÑO ESTRUCTURAL",
+        "SECC": "1",
+        "Profesor(a)": "Marcel De L\"Herbe"
+    },
+    {
+        "NOMBRE": "MECÁNICA",
+        "SECC": "1",
+        "Profesor(a)": "Sidney Villagrán"
+    },
+    {
+        "NOMBRE": "MECÁNICA",
+        "SECC": "2",
+        "Profesor(a)": "Mario Miranda"
+    },
+    {
+        "NOMBRE": "MECÁNICA DE SUELOS",
+        "SECC": "1",
+        "Profesor(a)": "Víctor Contreras"
+    },
+    {
+        "NOMBRE": "ECUACIONES DIFERENCIALES",
+        "SECC": "1",
+        "Profesor(a)": "Julio López"
+    },
+    {
+        "NOMBRE": "ÁLGEBRA LINEAL",
+        "SECC": "1",
+        "Profesor(a)": "Carlos Landeros"
+    },
+    {
+        "NOMBRE": "CÁLCULO II",
+        "SECC": "4",
+        "Profesor(a)": "Juan Rossel"
+    },
+    {
+        "NOMBRE": "ÁLGEBRA Y GEOMETRÍA",
+        "SECC": "1",
+        "Profesor(a)": "Carlos Landeros"
+    },
+    {
+        "NOMBRE": "MECÁNICA",
+        "SECC": "3",
+        "Profesor(a)": "Daniela Paredes"
+    },
+    {
+        "NOMBRE": "ECUACIONES DIFERENCIALES",
+        "SECC": "4",
+        "Profesor(a)": "Emilio Marti"
+    },
+    {
+        "NOMBRE": "ÁLGEBRA LINEAL",
+        "SECC": "14",
+        "Profesor(a)": "Gabriela López"
+    },
+    {
+        "NOMBRE": "CÁLCULO II",
+        "SECC": "2",
+        "Profesor(a)": "Emilio Marti"
+    },
+    {
+        "NOMBRE": "INFERENCIA ESTADÍSTICA",
+        "SECC": "3",
+        "Profesor(a)": "Sebastián Vera"
+    },
+    {
+        "NOMBRE": "ÁLGEBRA LINEAL",
+        "SECC": "11",
+        "Profesor(a)": "Gabriela López"
+    },
+    {
+        "NOMBRE": "SIMULACIÓN Y BIOLOGÍA PROGRAMABLE",
+        "SECC": "1",
+        "Profesor(a)": "Martín Gutierrez"
+    },
+    {
+        "NOMBRE": "MICROECONOMÍA",
+        "SECC": "1",
+        "Profesor(a)": "Eduardo Zúñiga"
+    },
+    {
+        "NOMBRE": "BASES DE DATOS",
+        "SECC": "3",
+        "Profesor(a)": "Alberto Abudinen"
+    },
+    {
+        "NOMBRE": "INGENIERÍA EN MATERIALES",
+        "SECC": "2",
+        "Profesor(a)": "Sandra Acosta"
+    },
+    {
+        "NOMBRE": "ESTÁTICA",
+        "SECC": "4",
+        "Profesor(a)": "Natalia Osorio"
+    },
+    {
+        "NOMBRE": "CÁLCULO II",
+        "SECC": "1",
+        "Profesor(a)": "Gabriela López"
+    },
+    {
+        "NOMBRE": "PROBABILIDADES Y ESTADÍSTICAS",
+        "SECC": "2",
+        "Profesor(a)": "Nicolás Tapia"
+    },
+    {
+        "NOMBRE": "EVALUACIÓN DE PROYECTOS",
+        "SECC": "2",
+        "Profesor(a)": "Eduardo Faivovich"
+    },
+    {
+        "NOMBRE": "TEORÍA ORGANIZACIÓNAL",
+        "SECC": "2",
+        "Profesor(a)": "Gladys Hinojosa"
+    },
+    {
+        "NOMBRE": "MECÁNICA",
+        "SECC": "4",
+        "Profesor(a)": "Vitalie Eremeev"
+    },
+    {
+        "NOMBRE": "ARQUITECTURAS EMERGENTES",
+        "SECC": "1",
+        "Profesor(a)": "Carlos García"
+    },
+    {
+        "NOMBRE": "COMUNICACIÓN PARA LA INGENIERÍA",
+        "SECC": "1",
+        "Profesor(a)": "Gabriela Corral"
+    },
+    {
+        "NOMBRE": "ELECTRÓNICA Y ELECTROTECNIA",
+        "SECC": "1",
+        "Profesor(a)": "Juan Negroni"
+    },
+    {
+        "NOMBRE": "ÁLGEBRA LINEAL",
+        "SECC": "2",
+        "Profesor(a)": "Boris Brayovic"
+    },
+    {
+        "NOMBRE": "CÁLCULO I",
+        "SECC": "3",
+        "Profesor(a)": "Sara Arancibia"
+    },
+    {
+        "NOMBRE": "ELECTRICIDAD Y MAGNETISMO",
+        "SECC": "1",
+        "Profesor(a)": "Marco Olivares"
+    },
+    {
+        "NOMBRE": "PROYECTO EN TICS I",
+        "SECC": "1",
+        "Profesor(a)": "Jorge Elliott"
+    },
+    {
+        "NOMBRE": "QUÍMICA",
+        "SECC": "7",
+        "Profesor(a)": "Manuel Gacitúa"
+    },
+    {
+        "NOMBRE": "ESTRUCTURAS DE DATOS Y ALGORITMOS",
+        "SECC": "1",
+        "Profesor(a)": "Yerko Ortiz"
+    },
+    {
+        "NOMBRE": "INGENIERÍA SÍSMICA",
+        "SECC": "1",
+        "Profesor(a)": "Gaspar Auad"
+    },
+    {
+        "NOMBRE": "GESTIÓN ORGANIZACIONAL",
+        "SECC": "1",
+        "Profesor(a)": "Ximena Geoffroy"
+    },
+    {
+        "NOMBRE": "PLANIFICACIÓN DE PROYECTOS",
+        "SECC": "1",
+        "Profesor(a)": "Teodosio Cayo"
+    },
+    {
+        "NOMBRE": "PROBABILIDADES Y ESTADÍSTICA",
+        "SECC": "4",
+        "Profesor(a)": "Hugo Robotham"
+    },
+    {
+        "NOMBRE": "EDIFICACIÓN",
+        "SECC": "1",
+        "Profesor(a)": "Carmen Gloria Morales"
+    },
+    {
+        "NOMBRE": "INGENIERÍA AMBIENTAL",
+        "SECC": "1",
+        "Profesor(a)": "Angela Plaza"
+    },
+    {
+        "NOMBRE": "ESTÁTICA",
+        "SECC": "3",
+        "Profesor(a)": "Leonardo Gallo"
+    },
+    {
+        "NOMBRE": "CALOR Y ONDAS",
+        "SECC": "4",
+        "Profesor(a)": "Roberto Lavín"
+    },
+    {
+        "NOMBRE": "MECÁNICA",
+        "SECC": "10",
+        "Profesor(a)": "Alejandra León"
+    },
+    {
+        "NOMBRE": "MECÁNICA",
+        "SECC": "8",
+        "Profesor(a)": "Alejandra León"
+    },
+    {
+        "NOMBRE": "FINANZAS",
+        "SECC": "1",
+        "Profesor(a)": "Rosa San Martín"
+    },
+    {
+        "NOMBRE": "MECÁNICA",
+        "SECC": "14",
+        "Profesor(a)": "Paloma Vildoso"
+    },
+    {
+        "NOMBRE": "CÁLCULO II",
+        "SECC": "11",
+        "Profesor(a)": "Boris Brayovic"
+    },
+    {
+        "NOMBRE": "DATA MINING",
+        "SECC": "1",
+        "Profesor(a)": "Pablo Lemus"
+    },
+    {
+        "NOMBRE": "SISTEMAS OPERATIVOS",
+        "SECC": "2",
+        "Profesor(a)": "Víctor Reyes"
+    },
+    {
+        "NOMBRE": "BASES DE DATOS",
+        "SECC": "1",
+        "Profesor(a)": "Alberto Abudinen"
+    },
+    {
+        "NOMBRE": "LIDERAZGO Y EMPRENDIMIENTO",
+        "SECC": "2",
+        "Profesor(a)": "Luz María Vivanco"
+    },
+    {
+        "NOMBRE": "CÁLCULO I",
+        "SECC": "2",
+        "Profesor(a)": "Tomás Neira"
+    },
+    {
+        "NOMBRE": "CÁLCULO II",
+        "SECC": "9",
+        "Profesor(a)": "Juan Muñoz"
+    },
+    {
+        "NOMBRE": "INTRODUCCIÓN  A LA ECONOMÍA",
+        "SECC": "1",
+        "Profesor(a)": "Jaime Calcagno"
+    },
+    {
+        "NOMBRE": "INTRODUCCIÓN  A LA ECONOMÍA",
+        "SECC": "4",
+        "Profesor(a)": "Jaime Calcagno"
+    },
+    {
+        "NOMBRE": "TALLER DE REDES Y SERVICIOS",
+        "SECC": "2",
+        "Profesor(a)": "Pablo Palacios"
+    },
+    {
+        "NOMBRE": "ANÁLISIS ESTRUCTURAL",
+        "SECC": "1",
+        "Profesor(a)": "José Colombo"
+    },
+    {
+        "NOMBRE": "JUEGO DE NEGOCIOS",
+        "SECC": "1",
+        "Profesor(a)": "Alberto Abudinen"
+    },
+    {
+        "NOMBRE": "TALLER DE REDES Y SERVICIOS",
+        "SECC": "1",
+        "Profesor(a)": "Pablo Palacios"
+    },
+    {
+        "NOMBRE": "CÁLCULO II",
+        "SECC": "12",
+        "Profesor(a)": "Rosa Rivero"
+    },
+    {
+        "NOMBRE": "OPTIMIZACIÓN",
+        "SECC": "2",
+        "Profesor(a)": "Renny Márquez"
+    },
+    {
+        "NOMBRE": "CÁLCULO II",
+        "SECC": "8",
+        "Profesor(a)": "Ignacio Saavedra"
+    },
+    {
+        "NOMBRE": "CÁLCULO II",
+        "SECC": "3",
+        "Profesor(a)": "Rosa Rivero"
+    },
+    {
+        "NOMBRE": "ÁLGEBRA Y GEOMETRÍA",
+        "SECC": "2",
+        "Profesor(a)": "Emilio Marti"
+    },
+    {
+        "NOMBRE": "DESARROLLO WEB Y MÓVIL",
+        "SECC": "2",
+        "Profesor(a)": "Gonzalo Fernández"
+    },
+    {
+        "NOMBRE": "CONTROL DE GESTIÓN",
+        "SECC": "1",
+        "Profesor(a)": "Cristóbal Calderón"
+    },
+    {
+        "NOMBRE": "ÁLGEBRA LINEAL",
+        "SECC": "5",
+        "Profesor(a)": "Jaime Contreras"
+    },
+    {
+        "NOMBRE": "OPTIMIZACIÓN",
+        "SECC": "1",
+        "Profesor(a)": "Esteban Geisse"
+    },
+    {
+        "NOMBRE": "CALOR Y ONDAS",
+        "SECC": "2",
+        "Profesor(a)": "Daniela Paredes"
+    },
+    {
+        "NOMBRE": "REDES DE DATOS",
+        "SECC": "1",
+        "Profesor(a)": "por definir"
+    },
+    {
+        "NOMBRE": "CALOR Y ONDAS",
+        "SECC": "3",
+        "Profesor(a)": "Marco Olivares"
+    },
+    {
+        "NOMBRE": "CALOR Y ONDAS",
+        "SECC": "5",
+        "Profesor(a)": "Roberto Lavín"
+    },
+    {
+        "NOMBRE": "MECÁNICA",
+        "SECC": "11",
+        "Profesor(a)": "Marco Olivares"
+    },
+    {
+        "NOMBRE": "ELECTRICIDAD Y MAGNETISMO",
+        "SECC": "6",
+        "Profesor(a)": "Sidney Villagrán"
+    },
+    {
+        "NOMBRE": "ARQUITECTURA DE SOFTWARE",
+        "SECC": "2",
+        "Profesor(a)": "Juan Giadach"
+    },
+    {
+        "NOMBRE": "CÁLCULO III",
+        "SECC": "3",
+        "Profesor(a)": "Ignacio Saavedra"
+    },
+    {
+        "NOMBRE": "INGENIERIA ECONÓMICA",
+        "SECC": "2",
+        "Profesor(a)": "Rosa San Martín"
+    },
+    {
+        "NOMBRE": "TÓPICOS EN FINANZAS",
+        "SECC": "1",
+        "Profesor(a)": "Roberto Ortiz"
+    },
+    {
+        "NOMBRE": "BASES DE DATOS",
+        "SECC": "4",
+        "Profesor(a)": "Juan Duarte"
+    },
+    {
+        "NOMBRE": "INTRODUCCIÓN  A LA ECONOMÍA",
+        "SECC": "3",
+        "Profesor(a)": "Richard Gillibrand"
+    },
+    {
+        "NOMBRE": "ÁLGEBRA LINEAL",
+        "SECC": "7",
+        "Profesor(a)": "Ignacio Saavedra"
+    },
+    {
+        "NOMBRE": "ÁLGEBRA LINEAL",
+        "SECC": "15",
+        "Profesor(a)": "Andrea Casado"
+    },
+    {
+        "NOMBRE": "HIDRÁULICA URBANA",
+        "SECC": "1",
+        "Profesor(a)": "Nelson Abarca"
+    },
+    {
+        "NOMBRE": "ELECTRICIDAD Y MAGNETISMO",
+        "SECC": "2",
+        "Profesor(a)": "Mario Miranda"
+    },
+    {
+        "NOMBRE": "MECÁNICA",
+        "SECC": "16",
+        "Profesor(a)": "Sergio Godoy"
+    },
+    {
+        "NOMBRE": "PRODUCCIÓN",
+        "SECC": "1",
+        "Profesor(a)": "Renny Márquez"
+    },
+    {
+        "NOMBRE": "PROYECTO EN TICS I",
+        "SECC": "2",
+        "Profesor(a)": "Jorge Elliott"
+    },
+    {
+        "NOMBRE": "INTRODUCCIÓN A LA TEORÍA DE JUEGOS",
+        "SECC": "1",
+        "Profesor(a)": "Eduardo Zúñiga"
+    },
+    {
+        "NOMBRE": "PRODUCCIÓN",
+        "SECC": "2",
+        "Profesor(a)": "Nicolás Tapia"
+    },
+    {
+        "NOMBRE": "PROGRAMACIÓN AVANZADA",
+        "SECC": "3",
+        "Profesor(a)": "Patricio Huichulef"
+    },
+    {
+        "NOMBRE": "MECÁNICA",
+        "SECC": "7",
+        "Profesor(a)": "Daniela Paredes"
+    },
+    {
+        "NOMBRE": "ÁLGEBRA LINEAL",
+        "SECC": "12",
+        "Profesor(a)": "Carlos Landeros"
+    },
+    {
+        "NOMBRE": "MECÁNICA",
+        "SECC": "5",
+        "Profesor(a)": "Leonardo Bartolo"
+    },
+    {
+        "NOMBRE": "ESTRUCTURAS DE DATOS Y ALGORITMOS",
+        "SECC": "3",
+        "Profesor(a)": "Rodrigo Álvarez"
+    },
+    {
+        "NOMBRE": "MECÁNICA",
+        "SECC": "6",
+        "Profesor(a)": "Daniela Paredes"
+    },
+    {
+        "NOMBRE": "BASES DE DATOS AVANZADAS",
+        "SECC": "1",
+        "Profesor(a)": "Juan Giadach"
+    },
+    {
+        "NOMBRE": "ELECTRICIDAD Y MAGNETISMO",
+        "SECC": "3",
+        "Profesor(a)": "Sidney Villagrán"
+    },
+    {
+        "NOMBRE": "COMPUTATIONAL FLUID DYNAMICS",
+        "SECC": "1",
+        "Profesor(a)": "Thomas Madler"
+    },
+    {
+        "NOMBRE": "ÁLGEBRA Y GEOMETRÍA",
+        "SECC": "3",
+        "Profesor(a)": "Sebastián Vera"
+    },
+    {
+        "NOMBRE": "CONTABILIDAD Y COSTOS",
+        "SECC": "3",
+        "Profesor(a)": "Roberto Ortiz"
+    },
+    {
+        "NOMBRE": "TEC AVANZADAS PARA LA TRANSICIÓN ENERGÉT",
+        "SECC": "1",
+        "Profesor(a)": "Andrés Díaz"
+    },
+    {
+        "NOMBRE": "BASES DE DATOS",
+        "SECC": "1",
+        "Profesor(a)": "Juan Duarte"
+    },
+    {
+        "NOMBRE": "MECÁNICA",
+        "SECC": "12",
+        "Profesor(a)": "Vitalie Eremeev"
+    },
+    {
+        "NOMBRE": "ÁLGEBRA LINEAL",
+        "SECC": "13",
+        "Profesor(a)": "Juan Rossel"
+    },
+    {
+        "NOMBRE": "TALLER DE PROYECTOS",
+        "SECC": "1",
+        "Profesor(a)": "Gabriel Silva"
+    },
+    {
+        "NOMBRE": "COMUNIC POR LUZ VISIBLE PARA IND INTELIG",
+        "SECC": "1",
+        "Profesor(a)": "Pablo Palacios"
+    },
+    {
+        "NOMBRE": "QUÍMICA",
+        "SECC": "6",
+        "Profesor(a)": "Alejandra Opazo"
+    },
+    {
+        "NOMBRE": "BIM",
+        "SECC": "1",
+        "Profesor(a)": "Víctor Muñoz"
+    },
+    {
+        "NOMBRE": "ECUACIONES DIFERENCIALES",
+        "SECC": "3",
+        "Profesor(a)": "Julio López"
+    },
+    {
+        "NOMBRE": "MICROECONOMÍA",
+        "SECC": "3",
+        "Profesor(a)": "Karina Véliz"
+    },
+    {
+        "NOMBRE": "MODELOS ESTOCÁSTICOS",
+        "SECC": "2",
+        "Profesor(a)": "Francisco Jara"
+    },
+    {
+        "NOMBRE": "CÁLCULO II",
+        "SECC": "15",
+        "Profesor(a)": "Ignacio Saavedra"
+    },
+    {
+        "NOMBRE": "DATA SCIENCE",
+        "SECC": "3",
+        "Profesor(a)": "Paulina Quilodrán"
+    },
+    {
+        "NOMBRE": "TECNOLOGÍAS INALÁMBRICAS",
+        "SECC": "1",
+        "Profesor(a)": "Erick Carreño"
+    },
+    {
+        "NOMBRE": "SIMULACIÓN",
+        "SECC": "3",
+        "Profesor(a)": "Mitsuo Tanida"
+    },
+    {
+        "NOMBRE": "CONTABILIDAD Y COSTOS",
+        "SECC": "5",
+        "Profesor(a)": "Rosa San Martín"
+    },
+    {
+        "NOMBRE": "HIDRÁULICA",
+        "SECC": "1",
+        "Profesor(a)": "Christian González"
+    },
+    {
+        "NOMBRE": "ELECTRICIDAD Y MAGNETISMO",
+        "SECC": "4",
+        "Profesor(a)": "Ricardo Rivera"
+    },
+    {
+        "NOMBRE": "MODELACIÓN HIDROLÓGICA",
+        "SECC": "1",
+        "Profesor(a)": "Alonso Pizarro"
+    },
+    {
+        "NOMBRE": "SIMULACIÓN",
+        "SECC": "4",
+        "Profesor(a)": "Mitsuo Tanida"
+    },
+    {
+        "NOMBRE": "PROGRAMACIÓN AVANZADA",
+        "SECC": "2",
+        "Profesor(a)": "Marcos Fantoval"
+    },
+    {
+        "NOMBRE": "PROGRAMACIÓN AVANZADA",
+        "SECC": "11",
+        "Profesor(a)": "Juan Duarte"
+    },
+    {
+        "NOMBRE": "BASES DE DATOS",
+        "SECC": "2",
+        "Profesor(a)": "Alberto Abudinen"
+    },
+    {
+        "NOMBRE": "PROGRAMACIÓN AVANZADA",
+        "SECC": "1",
+        "Profesor(a)": "Juan Duarte"
+    },
+    {
+        "NOMBRE": "ELECTRICIDAD Y MAGNETISMO",
+        "SECC": "7",
+        "Profesor(a)": "Leonardo Bartolo"
+    },
+    {
+        "NOMBRE": "INNOVACIÓN TECNOLOGÍCA E INDUSTRIA 4.0",
+        "SECC": "1",
+        "Profesor(a)": "Domingo Gallardo"
+    },
+    {
+        "NOMBRE": "ELECTRÓNICA Y ELECTROTECNIA",
+        "SECC": "2",
+        "Profesor(a)": "Jorge Tobar"
+    },
+    {
+        "NOMBRE": "DATA SCIENCE",
+        "SECC": "2",
+        "Profesor(a)": "Nicolás Tapia"
+    },
+    {
+        "NOMBRE": "PROGRAMACIÓN",
+        "SECC": "1",
+        "Profesor(a)": "Juan Duarte"
+    },
+    {
+        "NOMBRE": "PROGRAMACIÓN AVANZADA",
+        "SECC": "7",
+        "Profesor(a)": "Rodrigo Sáez"
+    },
+    {
+        "NOMBRE": "INFERENCIA ESTADÍSTICA",
+        "SECC": "1",
+        "Profesor(a)": "Paula Fariña"
+    },
+    {
+        "NOMBRE": "DESARROLLO WEB Y MÓVIL",
+        "SECC": "1",
+        "Profesor(a)": "Javier Carrión"
+    },
+    {
+        "NOMBRE": "DATA SCIENCE",
+        "SECC": "1",
+        "Profesor(a)": "Ítalo Vidal"
+    },
+    {
+        "NOMBRE": "TERMODINÁMICA",
+        "SECC": "3",
+        "Profesor(a)": "Rodrigo Cáceres"
+    },
+    {
+        "NOMBRE": "SIMULACIÓN",
+        "SECC": "2",
+        "Profesor(a)": "Felipe González"
+    },
+    {
+        "NOMBRE": "DESARROLLO WEB Y MÓVIL",
+        "SECC": "3",
+        "Profesor(a)": "Gonzalo Fernández"
+    },
+    {
+        "NOMBRE": "MECÁNICA DE FLUIDOS",
+        "SECC": "3",
+        "Profesor(a)": "Nicolás Gajardo"
+    },
+    {
+        "NOMBRE": "DATA SCIENCE",
+        "SECC": "1",
+        "Profesor(a)": "Osvaldo Ceballos"
+    },
+    {
+        "NOMBRE": "PROGRAMACIÓN AVANZADA",
+        "SECC": "8",
+        "Profesor(a)": "Marcos Fantoval"
+    },
+    {
+        "NOMBRE": "SEÑALES Y SISTEMAS",
+        "SECC": "1",
+        "Profesor(a)": "Luis Venegas"
+    },
+    {
+        "NOMBRE": "LOGÍSTICA",
+        "SECC": "2",
+        "Profesor(a)": "Luis Yáñez"
+    },
+    {
+        "NOMBRE": "SIMULACIÓN",
+        "SECC": "1",
+        "Profesor(a)": "Felipe González"
+    },
+    {
+        "NOMBRE": "ÁLGEBRA LINEAL",
+        "SECC": "6",
+        "Profesor(a)": "Ignacio Saavedra"
+    },
+    {
+        "NOMBRE": "ÁLGEBRA Y GEOMETRÍA",
+        "SECC": "5",
+        "Profesor(a)": "Rosa Riveros"
+    },
+    {
+        "NOMBRE": "BASES DE DATOS",
+        "SECC": "3",
+        "Profesor(a)": "Víctor Reyes"
+    },
+    {
+        "NOMBRE": "OPTIMIZACIÓN",
+        "SECC": "5",
+        "Profesor(a)": "Álvaro Zúñiga"
+    },
+    {
+        "NOMBRE": "CÁLCULO III",
+        "SECC": "4",
+        "Profesor(a)": "Juan Muñoz"
+    },
+    {
+        "NOMBRE": "PROBABILIDADES Y ESTADÍSTICA",
+        "SECC": "5",
+        "Profesor(a)": "Hugo Robotham"
+    },
+    {
+        "NOMBRE": "CÁLCULO III",
+        "SECC": "6",
+        "Profesor(a)": "Juan Muñoz"
+    },
+    {
+        "NOMBRE": "ECUACIONES DIFERENCIALES",
+        "SECC": "2",
+        "Profesor(a)": "Hugo Carrillo"
+    },
+    {
+        "NOMBRE": "PROGRAMACIÓN AVANZADA",
+        "SECC": "5",
+        "Profesor(a)": "Abel Sierra"
+    },
+    {
+        "NOMBRE": "FINANZAS",
+        "SECC": "2",
+        "Profesor(a)": "Guillermo Olivares"
+    },
+    {
+        "NOMBRE": "ELECTRICIDAD Y MAGNETISMO",
+        "SECC": "5",
+        "Profesor(a)": "Ricardo Rivera"
+    },
+    {
+        "NOMBRE": "PROYECTO EN TICS II",
+        "SECC": "1",
+        "Profesor(a)": "Cristian Osorio"
+    },
+    {
+        "NOMBRE": "MODELACIÓN NUMÉRICA DE ESTRUCTURA",
+        "SECC": "1",
+        "Profesor(a)": "Asdrubal Ayestarán"
+    },
+    {
+        "NOMBRE": "INTELIGENCIA ARTIFICIAL",
+        "SECC": "2",
+        "Profesor(a)": "Víctor Reyes"
+    },
+    {
+        "NOMBRE": "PROGRAMACIÓN",
+        "SECC": "3",
+        "Profesor(a)": "Patricio Huichulef"
+    },
+    {
+        "NOMBRE": "INNOVACIÓN",
+        "SECC": "1",
+        "Profesor(a)": "Carolina Busco"
+    },
+    {
+        "NOMBRE": "PROGRAMACIÓN",
+        "SECC": "4",
+        "Profesor(a)": "Patricio Huichulef"
+    },
+    {
+        "NOMBRE": "INGENIERÍA DE COSTOS",
+        "SECC": "1",
+        "Profesor(a)": "Juan Acuña"
+    },
+    {
+        "NOMBRE": "ECUACIONES DIFERENCIALES",
+        "SECC": "5",
+        "Profesor(a)": "Jaime Contreras"
+    },
+    {
+        "NOMBRE": "PROCESAMIENTO DIGITAL DE SEÑALES",
+        "SECC": "1",
+        "Profesor(a)": "Diego Dujovne"
+    },
+    {
+        "NOMBRE": "PROCESOS ÁGILES",
+        "SECC": "1",
+        "Profesor(a)": "Patricio Huichulef"
+    },
+    {
+        "NOMBRE": "TEORÍA ORGANIZACIÓNAL",
+        "SECC": "1",
+        "Profesor(a)": "Carolina Busco"
+    },
+    {
+        "NOMBRE": "EVALUACIÓN SOCIAL DE PROYECTOS",
+        "SECC": "1",
+        "Profesor(a)": "Alexa Von Loebenstein"
+    },
+    {
+        "NOMBRE": "ESTÁTICA",
+        "SECC": "1",
+        "Profesor(a)": "Rodolfo Danitz"
+    },
+    {
+        "NOMBRE": "CÁLCULO II",
+        "SECC": "5",
+        "Profesor(a)": "Gabriela López"
+    },
+    {
+        "NOMBRE": "MECÁNICA",
+        "SECC": "9",
+        "Profesor(a)": "Marco Olivares"
+    },
+    {
+        "NOMBRE": "PROGRAMACIÓN AVANZADA",
+        "SECC": "4",
+        "Profesor(a)": "Juan Duarte"
+    },
+    {
+        "NOMBRE": "PROGRAMACIÓN AVANZADA",
+        "SECC": "9",
+        "Profesor(a)": "Juan Duarte"
+    },
+    {
+        "NOMBRE": "PROGRAMACIÓN",
+        "SECC": "2",
+        "Profesor(a)": "Esteban Álvarez"
+    },
+    {
+        "NOMBRE": "PROGRAMACIÓN AVANZADA",
+        "SECC": "10",
+        "Profesor(a)": "Jonathan Frez"
+    },
+    {
+        "NOMBRE": "PROYECTOS ENERGÉTICOS",
+        "SECC": "2",
+        "Profesor(a)": "Cristóbal Sarmiento"
+    },
+    {
+        "NOMBRE": "INTRODUCCIÓN  A LA ECONOMÍA",
+        "SECC": "6",
+        "Profesor(a)": "Guillermo Olivares"
+    },
+    {
+        "NOMBRE": "CONTABILIDAD Y COSTOS",
+        "SECC": "2",
+        "Profesor(a)": "Rosa San Martín"
+    },
+    {
+        "NOMBRE": "SEMINARIO CS. INGENIERÍA",
+        "SECC": "1",
+        "Profesor(a)": "Thomas Madler"
+    },
+    {
+        "NOMBRE": "LOGÍSTICA",
+        "SECC": "3",
+        "Profesor(a)": "Nicolás Tapia"
+    },
+    {
+        "NOMBRE": "CÁLCULO I",
+        "SECC": "4",
+        "Profesor(a)": "Andrea Casado"
+    },
+    {
+        "NOMBRE": "INGENIERIA ECONÓMICA",
+        "SECC": "3",
+        "Profesor(a)": "Eduardo Faivovich"
+    },
+    {
+        "NOMBRE": "CÁLCULO II",
+        "SECC": "6",
+        "Profesor(a)": "Carlos Landeros"
+    },
+    {
+        "NOMBRE": "BASES DE DATOS",
+        "SECC": "2",
+        "Profesor(a)": "Martín Gutierrez"
+    },
+    {
+        "NOMBRE": "OPTIMIZACIÓN",
+        "SECC": "3",
+        "Profesor(a)": "Jessica Arismedi"
+    },
+    {
+        "NOMBRE": "MICROECONOMETRÍA",
+        "SECC": "1",
+        "Profesor(a)": "Louis de Grange"
+    },
+    {
+        "NOMBRE": "INTEROPERABILIDAD Y SIST DE TELEC",
+        "SECC": "1",
+        "Profesor(a)": "Luciano Ahumada"
+    },
+    {
+        "NOMBRE": "LIDERAZGO Y EMPRENDIMIENTO",
+        "SECC": "1",
+        "Profesor(a)": "Luz María Vivanco"
+    },
+    {
+        "NOMBRE": "INDUSTRIALIZACIÓN EN CONSTRUCCIÓN",
+        "SECC": "1",
+        "Profesor(a)": "Leonardo Brescia"
+    },
+    {
+        "NOMBRE": "ORGANIZACIÓN INDUSTRIAL",
+        "SECC": "1",
+        "Profesor(a)": "Jaime Calcagno"
+    },
+    {
+        "NOMBRE": "ÁLGEBRA Y GEOMETRÍA",
+        "SECC": "6",
+        "Profesor(a)": "Gabriela López"
+    },
+    {
+        "NOMBRE": "GESTIÓN ESTRATÉGICA PARA INFORMÁTICA",
+        "SECC": "1",
+        "Profesor(a)": "Jorge Elliott"
+    },
+    {
+        "NOMBRE": "OPTIMIZACIÓN",
+        "SECC": "4",
+        "Profesor(a)": "Álvaro Zúñiga"
+    },
+    {
+        "NOMBRE": "MECÁNICA DE FLUIDOS",
+        "SECC": "2",
+        "Profesor(a)": "Esteban Zamora"
+    },
+    {
+        "NOMBRE": "SISTEMAS DISTRIBUIDOS",
+        "SECC": "1",
+        "Profesor(a)": "Nicolás Hidalgo"
+    },
+    {
+        "NOMBRE": "CÁLCULO II",
+        "SECC": "14",
+        "Profesor(a)": "Bruno Aguiló"
+    },
+    {
+        "NOMBRE": "TERMODINÁMICA",
+        "SECC": "1",
+        "Profesor(a)": "Nicolás Gajardo"
+    },
+    {
+        "NOMBRE": "NANOCIENCIA Y NANOTECNOLOGÍA EN LA IND.",
+        "SECC": "1",
+        "Profesor(a)": "Roberto Lavín"
+    },
+    {
+        "NOMBRE": "MODELOS ESTOCÁSTICOS",
+        "SECC": "4",
+        "Profesor(a)": "Luis Yáñez"
+    },
+    {
+        "NOMBRE": "TOPOGRAFÍA",
+        "SECC": "1",
+        "Profesor(a)": "Carolina Montorio"
+    },
+    {
+        "NOMBRE": "PROBABILIDADES Y ESTADÍSTICA",
+        "SECC": "2",
+        "Profesor(a)": "Jorge Rozas"
+    },
+    {
+        "NOMBRE": "CRIPTOGRAFÍA Y SEGURIDAD EN REDES",
+        "SECC": "1",
+        "Profesor(a)": "René Guerrero"
+    },
+    {
+        "NOMBRE": "DISEÑO EN ACERO",
+        "SECC": "1",
+        "Profesor(a)": "Gaspar Auad"
+    },
+    {
+        "NOMBRE": "FUNDAMENTOS DE LA INTELIGENCIA ARTIFICIA",
+        "SECC": "1",
+        "Profesor(a)": "Bernardo Bertolotto"
+    },
+    {
+        "NOMBRE": "EVALUACIÓN DE PROYECTOS",
+        "SECC": "1",
+        "Profesor(a)": "Álvaro Zúñiga"
+    },
+    {
+        "NOMBRE": "CÁLCULO II",
+        "SECC": "13",
+        "Profesor(a)": "Boris Brayovic"
+    },
+    {
+        "NOMBRE": "CRIPTOGRAFÍA Y SEGURIDAD EN REDES",
+        "SECC": "2",
+        "Profesor(a)": "Omar Henríquez"
+    },
+    {
+        "NOMBRE": "INTRODUCCIÓN  A LA ECONOMÍA",
+        "SECC": "5",
+        "Profesor(a)": "Guillermo Olivares"
+    },
+    {
+        "NOMBRE": "PROGRAMACIÓN AVANZADA",
+        "SECC": "6",
+        "Profesor(a)": "Leandro Llanza"
+    },
+    {
+        "NOMBRE": "CALOR Y ONDAS",
+        "SECC": "6",
+        "Profesor(a)": "Daniela Paredes"
+    },
+    {
+        "NOMBRE": "SISTEMAS DE PROCESAMIENTO PARA BIG DATA",
+        "SECC": "1",
+        "Profesor(a)": "Nicolás Hidalgo"
+    },
+    {
+        "NOMBRE": "LOGÍSTICA",
+        "SECC": "1",
+        "Profesor(a)": "Nicolás Tapia"
+    },
+    {
+        "NOMBRE": "PROBABILIDADES Y ESTADÍSTICA",
+        "SECC": "3",
+        "Profesor(a)": "Jaime Pérez-Kallens"
+    },
+    {
+        "NOMBRE": "ÁLGEBRA LINEAL",
+        "SECC": "10",
+        "Profesor(a)": "Jaime Contreras"
+    },
+    {
+        "NOMBRE": "INTRODUCCIÓN  A LA ECONOMÍA",
+        "SECC": "2",
+        "Profesor(a)": "Jaime Calcagno"
+    },
+    {
+        "NOMBRE": "SEÑALES Y SISTEMAS",
+        "SECC": "2",
+        "Profesor(a)": "Rodrigo Muñoz"
+    },
+    {
+        "NOMBRE": "MECÁNICA",
+        "SECC": "13",
+        "Profesor(a)": "Leonardo Bartolo"
+    },
+    {
+        "NOMBRE": "EVALUACIÓN DE PROYECTOS TIC",
+        "SECC": "1",
+        "Profesor(a)": "Eduardo Faivovich"
+    },
+    {
+        "NOMBRE": "ÁLGEBRA LINEAL",
+        "SECC": "8",
+        "Profesor(a)": "Boris Brayovic"
+    },
+    {
+        "NOMBRE": "OPTIMIZACIÓN",
+        "SECC": "6",
+        "Profesor(a)": "Pablo Rojas"
+    },
+    {
+        "NOMBRE": "MECÁNICA DE FLUIDOS",
+        "SECC": "1",
+        "Profesor(a)": "Christian González"
+    },
+    {
+        "NOMBRE": "ESTÁTICA",
+        "SECC": "2",
+        "Profesor(a)": "Juan Ulloa"
+    },
+    {
+        "NOMBRE": "INFERENCIA ESTADÍSTICA",
+        "SECC": "2",
+        "Profesor(a)": "Sebastián Vera"
+    },
+    {
+        "NOMBRE": "REDES DE DATOS",
+        "SECC": "2",
+        "Profesor(a)": "por definir"
+    },
+    {
+        "NOMBRE": "INGENIERÍA EN MATERIALES",
+        "SECC": "1",
+        "Profesor(a)": "Sandra Acosta"
+    },
+    {
+        "NOMBRE": "PROYECTOS ENERGÉTICOS",
+        "SECC": "1",
+        "Profesor(a)": "Rodrigo Cáceres"
+    },
+    {
+        "NOMBRE": "ESTÁTICA",
+        "SECC": "1",
+        "Profesor(a)": "José Colombo"
+    },
+    {
+        "NOMBRE": "SISTEMAS DISTRIBUIDOS",
+        "SECC": "2",
+        "Profesor(a)": "Nicolás Hidalgo"
+    },
+    {
+        "NOMBRE": "CÁLCULO I",
+        "SECC": "1",
+        "Profesor(a)": "Carlos Landeros"
+    },
+    {
+        "NOMBRE": "FUNDACIONES",
+        "SECC": "1",
+        "Profesor(a)": "Pablo González"
+    },
+    {
+        "NOMBRE": "ENERGÍA SOLAR",
+        "SECC": "1",
+        "Profesor(a)": "Cristóbal Sarmiento"
+    },
+    {
+        "NOMBRE": "TECNOLOGÍAS INALÁMBRICAS",
+        "SECC": "2",
+        "Profesor(a)": "Luis Venegas"
+    },
+    {
+        "NOMBRE": "COMUNICACIONES DIGITALES",
+        "SECC": "1",
+        "Profesor(a)": "Diego Dujovne"
+    },
+    {
+        "NOMBRE": "DISEÑO DE CAMINOS",
+        "SECC": "1",
+        "Profesor(a)": "Nicolás Tapia"
+    },
+    {
+        "NOMBRE": "GRAFOS Y ALGORITMOS",
+        "SECC": "1",
+        "Profesor(a)": "Karol Suchan"
+    },
+    {
+        "NOMBRE": "HIDROLOGÍA",
+        "SECC": "1",
+        "Profesor(a)": "Alonso Pizarro"
+    },
+    {
+        "NOMBRE": "ÁLGEBRA LINEAL",
+        "SECC": "9",
+        "Profesor(a)": "Juan Rossel"
+    },
+    {
+        "NOMBRE": "QUÍMICA",
+        "SECC": "4",
+        "Profesor(a)": "Rommina Contenla"
+    },
+    {
+        "NOMBRE": "TALLER DE INGENIERIA INDUSTRIAL",
+        "SECC": "1",
+        "Profesor(a)": "Bartolomé Rodillo"
+    },
+    {
+        "NOMBRE": "ENERGÍAS RENOVABLES Y SUSTENTABILIDAD",
+        "SECC": "1",
+        "Profesor(a)": "Masoud Behzad"
+    },
+    {
+        "NOMBRE": "FINTECH",
+        "SECC": "1",
+        "Profesor(a)": "Hernán Alvarado"
+    },
+    {
+        "NOMBRE": "MECÁNICA",
+        "SECC": "15",
+        "Profesor(a)": "Ricardo Rivera"
+    },
+    {
+        "NOMBRE": "TRANSPORTE DE SEDIMENTOS",
+        "SECC": "1",
+        "Profesor(a)": "Hernán Alcayaga"
+    },
+    {
+        "NOMBRE": "ALGORITMOS DE RUTEO Y REDES RESILIENTES",
+        "SECC": "1",
+        "Profesor(a)": "Nicolás Boettcher"
+    },
+    {
+        "NOMBRE": "PROYECTO EN TICS II",
+        "SECC": "2",
+        "Profesor(a)": "Leandro Llanza"
+    },
+    {
+        "NOMBRE": "ADM DE PROYECTOS CIVILES",
+        "SECC": "1",
+        "Profesor(a)": "Alexander Dulovits"
+    },
+    {
+        "NOMBRE": "TECNOLOGÍA DEL HORMIGÓN",
+        "SECC": "1",
+        "Profesor(a)": "Cristián Narváez"
+    },
+    {
+        "NOMBRE": "INGENIERÍA DE SOFTWARE",
+        "SECC": "1",
+        "Profesor(a)": "Matías Rojas"
+    },
+    {
+        "NOMBRE": "SISTEMAS DE CONTENCIÓN DE TALUDES",
+        "SECC": "1",
+        "Profesor(a)": "Víctor Contreras"
+    },
+    {
+        "NOMBRE": "EVALUACIÓN DE PROYECTOS TIC",
+        "SECC": "2",
+        "Profesor(a)": "Jorge Elliott"
+    },
+    {
+        "NOMBRE": "TECNOLOGÍA DEL ASFALTO",
+        "SECC": "1",
+        "Profesor(a)": "Sergio Valverde"
+    },
+    {
+        "NOMBRE": "TALLER DE INGENIERIA INDUSTRIAL",
+        "SECC": "2",
+        "Profesor(a)": "Sergio Acuña"
+    },
+    {
+        "NOMBRE": "TÓPICOS DE INVESTIGACIÓN OPERATIVA",
+        "SECC": "1",
+        "Profesor(a)": "Francisco Jara"
+    },
+    {
+        "NOMBRE": "ARQUITECTURA Y ORGANIZ DE COMPUTADORES",
+        "SECC": "2",
+        "Profesor(a)": "Pablo Sánchez"
+    },
+    {
+        "NOMBRE": "INGENIERÍA DE SOFTWARE",
+        "SECC": "2",
+        "Profesor(a)": "Matías Rojas"
+    },
+    {
+        "NOMBRE": "INTELIGENCIA ARTIFICIAL",
+        "SECC": "1",
+        "Profesor(a)": "Martín Gutierrez"
+    }
+]
