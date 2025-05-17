@@ -14,6 +14,10 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 function formatTime(date) {
+    if (!(date instanceof Date) || isNaN(date.getTime())) {
+        console.warn('formatTime recibió una fecha inválida:', date);
+        return '00:00';
+    }
     const hours = date.getUTCHours().toString().padStart(2, '0');
     const minutes = date.getUTCMinutes().toString().padStart(2, '0');
     return `${hours}:${minutes}`;
@@ -99,42 +103,48 @@ let ProfileService = class ProfileService {
     async updateUserProfile(userId, dto) {
         const { full_name, photo_url, bio, university, career, study_year, interestCourseIds, } = dto;
         const userToUpdate = {};
-        if (full_name)
+        if (full_name !== undefined)
             userToUpdate.full_name = full_name;
-        if (photo_url)
+        if (photo_url !== undefined)
             userToUpdate.photo_url = photo_url;
         const studentProfileData = {};
         const tutorProfileData = {};
-        if (bio) {
+        if (bio !== undefined) {
             studentProfileData.bio = bio;
             tutorProfileData.bio = bio;
         }
-        if (university)
+        if (university !== undefined)
             studentProfileData.university = university;
-        if (career)
+        if (career !== undefined)
             studentProfileData.career = career;
-        if (study_year)
+        if (study_year !== undefined)
             studentProfileData.study_year = study_year;
         try {
             return await this.prisma.$transaction(async (tx) => {
+                const currentUserData = await tx.user.findUnique({
+                    where: { id: userId },
+                    select: { studentProfile: true, tutorProfile: true },
+                });
+                if (!currentUserData) {
+                    throw new common_1.NotFoundException('Usuario no encontrado para actualizar.');
+                }
                 const updatedUser = await tx.user.update({
                     where: { id: userId },
                     data: userToUpdate,
-                    include: { studentProfile: true, tutorProfile: true },
                 });
-                if (updatedUser.studentProfile) {
+                if (currentUserData.studentProfile) {
                     await tx.studentProfile.update({
                         where: { userId },
                         data: studentProfileData,
                     });
                     if (interestCourseIds !== undefined) {
                         await tx.studentInterest.deleteMany({
-                            where: { studentProfileId: updatedUser.studentProfile.id },
+                            where: { studentProfileId: currentUserData.studentProfile.id },
                         });
                         if (interestCourseIds.length > 0) {
                             await tx.studentInterest.createMany({
                                 data: interestCourseIds.map((courseId) => ({
-                                    studentProfileId: updatedUser.studentProfile.id,
+                                    studentProfileId: currentUserData.studentProfile.id,
                                     courseId,
                                 })),
                                 skipDuplicates: true,
@@ -142,7 +152,7 @@ let ProfileService = class ProfileService {
                         }
                     }
                 }
-                if (updatedUser.tutorProfile && bio) {
+                if (currentUserData.tutorProfile && bio !== undefined) {
                     await tx.tutorProfile.update({
                         where: { userId },
                         data: { bio: tutorProfileData.bio },
@@ -167,22 +177,35 @@ let ProfileService = class ProfileService {
         catch (error) {
             if (error instanceof client_1.Prisma.PrismaClientKnownRequestError) {
                 if (error.code === 'P2025') {
-                    throw new common_1.NotFoundException('Usuario o perfil no encontrado para actualizar.');
+                    throw new common_1.NotFoundException('Usuario, perfil de estudiante o perfil de tutor no encontrado para actualizar.');
                 }
             }
             console.error('Error updating user profile:', error);
-            throw new common_1.InternalServerErrorException('Error al actualizar el perfil.');
+            throw new common_1.InternalServerErrorException('Error al actualizar el perfil del usuario.');
         }
     }
     async updateTutorSpecificProfile(userId, dto) {
-        const tutorProfile = await this.prisma.tutorProfile.findUnique({
+        const currentUser = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+        if (!currentUser) {
+            throw new common_1.NotFoundException('Usuario no encontrado.');
+        }
+        let tutorProfile = await this.prisma.tutorProfile.findUnique({
             where: { userId },
         });
+        const { bio, cv_url, experience_details, tutoring_contact_email, tutoring_phone, availability, courses, } = dto;
         if (!tutorProfile) {
-            throw new common_1.NotFoundException('Perfil de tutor no encontrado para este usuario.');
+            tutorProfile = await this.prisma.tutorProfile.create({
+                data: {
+                    userId: userId,
+                    bio: bio || '',
+                },
+            });
         }
-        const { cv_url, experience_details, tutoring_contact_email, tutoring_phone, availability, courses, } = dto;
         const dataToUpdate = {};
+        if (bio !== undefined)
+            dataToUpdate.bio = bio;
         if (cv_url !== undefined)
             dataToUpdate.cv_url = cv_url;
         if (experience_details !== undefined)
@@ -197,9 +220,15 @@ let ProfileService = class ProfileService {
                     where: { id: tutorProfile.id },
                     data: dataToUpdate,
                 });
+                if (currentUser.role === client_1.Role.STUDENT) {
+                    await tx.user.update({
+                        where: { id: userId },
+                        data: { role: client_1.Role.BOTH },
+                    });
+                }
                 if (availability !== undefined) {
                     await tx.availabilityBlock.deleteMany({
-                        where: { tutorId: tutorProfile.id },
+                        where: { tutorId: updatedTutorProfile.id },
                     });
                     if (availability.length > 0) {
                         const availabilityData = availability.map((block) => {
@@ -211,7 +240,7 @@ let ProfileService = class ProfileService {
                                 .map(Number);
                             const baseDate = '1970-01-01T';
                             return {
-                                tutorId: tutorProfile.id,
+                                tutorId: updatedTutorProfile.id,
                                 day_of_week: block.day_of_week,
                                 start_time: new Date(`${baseDate}${startHour.toString().padStart(2, '0')}:${startMinute.toString().padStart(2, '0')}:00.000Z`),
                                 end_time: new Date(`${baseDate}${endHour.toString().padStart(2, '0')}:${endMinute.toString().padStart(2, '0')}:00.000Z`),
@@ -222,11 +251,11 @@ let ProfileService = class ProfileService {
                 }
                 if (courses !== undefined) {
                     await tx.tutorCourse.deleteMany({
-                        where: { tutorId: tutorProfile.id },
+                        where: { tutorId: updatedTutorProfile.id },
                     });
                     if (courses.length > 0) {
                         const tutorCoursesData = courses.map((courseDto) => ({
-                            tutorId: tutorProfile.id,
+                            tutorId: updatedTutorProfile.id,
                             courseId: courseDto.courseId,
                             level: courseDto.level,
                             grade: courseDto.grade !== undefined ? courseDto.grade : 0,
@@ -235,7 +264,7 @@ let ProfileService = class ProfileService {
                     }
                 }
                 return tx.tutorProfile.findUniqueOrThrow({
-                    where: { id: tutorProfile.id },
+                    where: { id: updatedTutorProfile.id },
                     include: {
                         courses: { include: { course: true } },
                         availability: true,
@@ -248,7 +277,10 @@ let ProfileService = class ProfileService {
             console.error('Error updating tutor specific profile:', error);
             if (error instanceof client_1.Prisma.PrismaClientKnownRequestError) {
                 if (error.code === 'P2003') {
-                    throw new common_1.BadRequestException('Uno de los IDs de curso proporcionados no es válido.');
+                    throw new common_1.BadRequestException('Uno de los IDs de curso proporcionados no es válido o no existe.');
+                }
+                else if (error.code === 'P2025') {
+                    throw new common_1.NotFoundException('Perfil de tutor no encontrado para actualizar. Esto no debería suceder si la creación/búsqueda inicial fue exitosa.');
                 }
             }
             throw new common_1.InternalServerErrorException('Error al actualizar el perfil específico del tutor.');

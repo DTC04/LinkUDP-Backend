@@ -8,22 +8,28 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import {
   User,
-  StudentProfile,
+  // StudentProfile, // No se usa directamente como tipo de retorno o parámetro explícito aquí
   TutorProfile,
   Prisma,
   Role,
-  AvailabilityBlock,
-  DayOfWeek,
+  // AvailabilityBlock, // No se usa directamente como tipo de retorno o parámetro explícito aquí
+  // DayOfWeek, // No se usa directamente como tipo de retorno o parámetro explícito aquí
 } from '@prisma/client';
 import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
 import {
   UpdateTutorSpecificProfileDto,
-  AvailabilityBlockDto as AvailabilityBlockInputDto,
-  TutorCourseDto as TutorCourseInputDto,
+  // AvailabilityBlockDto, // Ya está en update-tutor-specific-profile.dto.ts
+  // TutorCourseDto, // Ya está en update-tutor-specific-profile.dto.ts
 } from './dto/update-tutor-specific-profile.dto';
-import { ViewUserProfileDto } from './dto/view-user-profile.dto'; // Asegúrate de crear este DTO
+import { ViewUserProfileDto } from './dto/view-user-profile.dto';
 
 function formatTime(date: Date): string {
+  if (!(date instanceof Date) || isNaN(date.getTime())) {
+    // En caso de fecha inválida, devuelve un string que no cause error o maneja según necesidad.
+    // Podría ser útil loguear este caso si no se espera.
+    console.warn('formatTime recibió una fecha inválida:', date);
+    return '00:00'; // Un valor por defecto o lanzar un error si es crítico.
+  }
   const hours = date.getUTCHours().toString().padStart(2, '0');
   const minutes = date.getUTCMinutes().toString().padStart(2, '0');
   return `${hours}:${minutes}`;
@@ -63,7 +69,6 @@ export class ProfileService {
       throw new NotFoundException('Usuario no encontrado');
     }
 
-    // Mapeo a ViewUserProfileDto
     const response: ViewUserProfileDto = {
       user: {
         id: user.id,
@@ -104,8 +109,8 @@ export class ProfileService {
         })),
         availability: user.tutorProfile.availability.map((ab) => ({
           day_of_week: ab.day_of_week,
-          start_time: formatTime(ab.start_time), // Asumiendo que start_time y end_time son DateTime
-          end_time: formatTime(ab.end_time), // y quieres devolver HH:MM
+          start_time: formatTime(ab.start_time),
+          end_time: formatTime(ab.end_time),
         })),
       };
     }
@@ -116,6 +121,8 @@ export class ProfileService {
     userId: number,
     dto: UpdateUserProfileDto,
   ): Promise<User> {
+    // Considera devolver ViewUserProfileDto para consistencia
+
     const {
       full_name,
       photo_url,
@@ -127,65 +134,69 @@ export class ProfileService {
     } = dto;
 
     const userToUpdate: Prisma.UserUpdateInput = {};
-    if (full_name) userToUpdate.full_name = full_name;
-    if (photo_url) userToUpdate.photo_url = photo_url;
-    // El bio general se puede actualizar en User o en StudentProfile/TutorProfile
-    // Por simplicidad, si es un tutor, actualizamos TutorProfile.bio, si es student, StudentProfile.bio
-    // Si solo es User (sin perfil específico), no hay bio en el modelo User directamente.
-    // Vamos a asumir que el 'bio' en UpdateUserProfileDto se refiere al bio del perfil específico si existe.
+    if (full_name !== undefined) userToUpdate.full_name = full_name;
+    if (photo_url !== undefined) userToUpdate.photo_url = photo_url;
 
     const studentProfileData: Prisma.StudentProfileUpdateInput = {};
     const tutorProfileData: Prisma.TutorProfileUpdateInput = {};
 
-    if (bio) {
-      studentProfileData.bio = bio;
-      tutorProfileData.bio = bio; // Actualizar en ambos por si el rol es BOTH
+    if (bio !== undefined) {
+      studentProfileData.bio = bio; // Bio para el perfil de estudiante
+      // Si el usuario también es tutor, su bio se puede actualizar aquí o en updateTutorSpecificProfile
+      tutorProfileData.bio = bio; // Bio para el perfil de tutor
     }
-    if (university) studentProfileData.university = university;
-    if (career) studentProfileData.career = career;
-    if (study_year) studentProfileData.study_year = study_year;
+    if (university !== undefined) studentProfileData.university = university;
+    if (career !== undefined) studentProfileData.career = career;
+    if (study_year !== undefined) studentProfileData.study_year = study_year;
 
     try {
       return await this.prisma.$transaction(async (tx) => {
+        const currentUserData = await tx.user.findUnique({
+          // Obtener datos actuales del usuario
+          where: { id: userId },
+          select: { studentProfile: true, tutorProfile: true },
+        });
+
+        if (!currentUserData) {
+          throw new NotFoundException('Usuario no encontrado para actualizar.');
+        }
+
         const updatedUser = await tx.user.update({
           where: { id: userId },
           data: userToUpdate,
-          include: { studentProfile: true, tutorProfile: true },
         });
 
-        if (updatedUser.studentProfile) {
+        if (currentUserData.studentProfile) {
+          // Si existe perfil de estudiante
           await tx.studentProfile.update({
             where: { userId },
             data: studentProfileData,
           });
 
           if (interestCourseIds !== undefined) {
-            // Permite enviar array vacío para borrar
-            // Eliminar intereses existentes
             await tx.studentInterest.deleteMany({
-              where: { studentProfileId: updatedUser.studentProfile.id },
+              where: { studentProfileId: currentUserData.studentProfile.id },
             });
-            // Crear nuevos intereses si se proporcionan
             if (interestCourseIds.length > 0) {
               await tx.studentInterest.createMany({
                 data: interestCourseIds.map((courseId) => ({
-                  studentProfileId: updatedUser.studentProfile!.id,
+                  studentProfileId: currentUserData.studentProfile!.id,
                   courseId,
                 })),
-                skipDuplicates: true, // Por si acaso, aunque la lógica anterior elimina primero
+                skipDuplicates: true,
               });
             }
           }
         }
 
-        if (updatedUser.tutorProfile && bio) {
-          // Solo actualiza bio del tutor si se proporcionó
+        if (currentUserData.tutorProfile && bio !== undefined) {
+          // Si existe perfil de tutor y se envió 'bio'
           await tx.tutorProfile.update({
             where: { userId },
-            data: { bio: tutorProfileData.bio },
+            data: { bio: tutorProfileData.bio }, // Actualiza el bio del tutor
           });
         }
-        // Recargar el usuario con todas las inclusiones para la respuesta
+        // Devuelve el usuario completo con sus perfiles actualizados
         return tx.user.findUniqueOrThrow({
           where: { id: userId },
           include: {
@@ -204,13 +215,16 @@ export class ProfileService {
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
+          // Error si un registro a actualizar no se encuentra
           throw new NotFoundException(
-            'Usuario o perfil no encontrado para actualizar.',
+            'Usuario, perfil de estudiante o perfil de tutor no encontrado para actualizar.',
           );
         }
       }
       console.error('Error updating user profile:', error);
-      throw new InternalServerErrorException('Error al actualizar el perfil.');
+      throw new InternalServerErrorException(
+        'Error al actualizar el perfil del usuario.',
+      );
     }
   }
 
@@ -218,16 +232,22 @@ export class ProfileService {
     userId: number,
     dto: UpdateTutorSpecificProfileDto,
   ): Promise<TutorProfile> {
-    const tutorProfile = await this.prisma.tutorProfile.findUnique({
-      where: { userId },
+    // Considera devolver ViewUserProfileDto para consistencia
+    const currentUser = await this.prisma.user.findUnique({
+      where: { id: userId },
     });
-    if (!tutorProfile) {
-      throw new NotFoundException(
-        'Perfil de tutor no encontrado para este usuario.',
-      );
+
+    if (!currentUser) {
+      throw new NotFoundException('Usuario no encontrado.');
     }
 
+    // Intentar obtener el perfil de tutor existente
+    let tutorProfile = await this.prisma.tutorProfile.findUnique({
+      where: { userId },
+    });
+
     const {
+      bio,
       cv_url,
       experience_details,
       tutoring_contact_email,
@@ -236,7 +256,20 @@ export class ProfileService {
       courses,
     } = dto;
 
+    // Si no existe el perfil de tutor, se crea uno.
+    // Esto es clave para el flujo "Convertirse en Tutor".
+    if (!tutorProfile) {
+      tutorProfile = await this.prisma.tutorProfile.create({
+        data: {
+          userId: userId,
+          bio: bio || '', // Asigna bio si viene en este DTO, sino default a string vacío
+          // Otros campos por defecto para TutorProfile pueden ir aquí si son necesarios
+        },
+      });
+    }
+
     const dataToUpdate: Prisma.TutorProfileUpdateInput = {};
+    if (bio !== undefined) dataToUpdate.bio = bio;
     if (cv_url !== undefined) dataToUpdate.cv_url = cv_url;
     if (experience_details !== undefined)
       dataToUpdate.experience_details = experience_details;
@@ -244,20 +277,28 @@ export class ProfileService {
       dataToUpdate.tutoring_contact_email = tutoring_contact_email;
     if (tutoring_phone !== undefined)
       dataToUpdate.tutoring_phone = tutoring_phone;
-    // El 'bio' principal del tutor se maneja en updateUserProfile
 
     try {
       return await this.prisma.$transaction(async (tx) => {
-        // 1. Actualizar campos directos de TutorProfile
+        // 1. Actualizar (o usar el recién creado) TutorProfile
         const updatedTutorProfile = await tx.tutorProfile.update({
-          where: { id: tutorProfile.id },
+          where: { id: tutorProfile!.id }, // tutorProfile no será null aquí
           data: dataToUpdate,
         });
 
-        // 2. Gestionar AvailabilityBlocks (reemplazar todos)
+        // 2. Lógica para actualizar el rol del usuario si es necesario
+        if (currentUser.role === Role.STUDENT) {
+          await tx.user.update({
+            where: { id: userId },
+            data: { role: Role.BOTH }, // Cambiar rol a BOTH
+          });
+        }
+        // Si el rol ya era TUTOR o BOTH, no se necesita cambio explícito aquí.
+
+        // 3. Gestionar AvailabilityBlocks (reemplazar todos)
         if (availability !== undefined) {
           await tx.availabilityBlock.deleteMany({
-            where: { tutorId: tutorProfile.id },
+            where: { tutorId: updatedTutorProfile.id },
           });
           if (availability.length > 0) {
             const availabilityData = availability.map((block) => {
@@ -267,12 +308,9 @@ export class ProfileService {
               const [endHour, endMinute] = block.end_time
                 .split(':')
                 .map(Number);
-
-              // Crear fechas UTC para almacenar solo la hora. El día es manejado por day_of_week
-              // Usamos una fecha base (ej. 1970-01-01) y le asignamos la hora UTC
-              const baseDate = '1970-01-01T';
+              const baseDate = '1970-01-01T'; // Fecha base para almacenar solo la hora en UTC
               return {
-                tutorId: tutorProfile.id,
+                tutorId: updatedTutorProfile.id,
                 day_of_week: block.day_of_week,
                 start_time: new Date(
                   `${baseDate}${startHour.toString().padStart(2, '0')}:${startMinute.toString().padStart(2, '0')}:00.000Z`,
@@ -286,39 +324,44 @@ export class ProfileService {
           }
         }
 
-        // 3. Gestionar TutorCourses (reemplazar todos)
+        // 4. Gestionar TutorCourses (reemplazar todos)
         if (courses !== undefined) {
           await tx.tutorCourse.deleteMany({
-            where: { tutorId: tutorProfile.id },
+            where: { tutorId: updatedTutorProfile.id },
           });
           if (courses.length > 0) {
             const tutorCoursesData = courses.map((courseDto) => ({
-              tutorId: tutorProfile.id,
+              tutorId: updatedTutorProfile.id,
               courseId: courseDto.courseId,
               level: courseDto.level,
-              grade: courseDto.grade !== undefined ? courseDto.grade : 0, // Default to 0 or another valid number
+              grade: courseDto.grade !== undefined ? courseDto.grade : 0, // Default grade si no se proporciona
             }));
             await tx.tutorCourse.createMany({ data: tutorCoursesData });
           }
         }
-        // Recargar el perfil de tutor con las relaciones para la respuesta
+
+        // Recargar el perfil de tutor con todas las relaciones actualizadas para la respuesta
         return tx.tutorProfile.findUniqueOrThrow({
-          where: { id: tutorProfile.id },
+          where: { id: updatedTutorProfile.id },
           include: {
             courses: { include: { course: true } },
             availability: true,
-            user: true,
+            user: true, // Incluir el usuario para ver el rol actualizado en la respuesta
           },
         });
       });
     } catch (error) {
       console.error('Error updating tutor specific profile:', error);
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        // Manejar errores específicos de Prisma, ej. P2003 por courseId inválido
         if (error.code === 'P2003') {
           // Foreign key constraint failed
           throw new BadRequestException(
-            'Uno de los IDs de curso proporcionados no es válido.',
+            'Uno de los IDs de curso proporcionados no es válido o no existe.',
+          );
+        } else if (error.code === 'P2025') {
+          // An operation failed because it depends on one or more records that were required but not found.
+          throw new NotFoundException(
+            'Perfil de tutor no encontrado para actualizar. Esto no debería suceder si la creación/búsqueda inicial fue exitosa.',
           );
         }
       }

@@ -1,71 +1,91 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+// src/profile/dto/update-tutor-specific-profile.dto.ts
 import {
-  IsArray,
-  IsEmail,
-  IsOptional,
   IsString,
+  IsOptional,
   IsUrl,
-  ValidateNested,
+  IsEmail,
   IsPhoneNumber,
+  IsArray,
+  ValidateNested,
+  IsNotEmpty,
+  IsEnum,
+  IsNumber, // Asegúrate de importar IsNumber si lo usas para courseId o grade
+  Min, // Para validaciones de números
+  Max, // Para validaciones de números
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { AvailabilityBlockDto } from './availability-block.dto';
-import { TutorCourseDto } from './tutor-course.dto';
+import { DayOfWeek } from '@prisma/client';
+
+// Definición de AvailabilityBlockDto
+export class AvailabilityBlockDto {
+  @IsNotEmpty({ message: 'El día de la semana no puede estar vacío.' })
+  @IsEnum(DayOfWeek, { message: 'El día de la semana no es válido.' })
+  day_of_week: DayOfWeek;
+
+  @IsNotEmpty({ message: 'La hora de inicio no puede estar vacía.' })
+  @IsString()
+  // Puedes añadir @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/, { message: 'El formato de hora de inicio debe ser HH:MM' })
+  start_time: string;
+
+  @IsNotEmpty({ message: 'La hora de término no puede estar vacía.' })
+  @IsString()
+  // Puedes añadir @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/, { message: 'El formato de hora de término debe ser HH:MM' })
+  end_time: string;
+}
+
+// Definición de TutorCourseDto
+export class TutorCourseDto {
+  @IsNotEmpty({ message: 'El ID del curso no puede estar vacío.' })
+  @IsNumber({}, { message: 'El ID del curso debe ser un número.' })
+  courseId: number;
+
+  @IsNotEmpty({ message: 'El nivel del curso no puede estar vacío.' })
+  @IsString()
+  level: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'La nota debe ser un número.' })
+  @Min(1.0, { message: 'La nota mínima es 1.0.' })
+  @Max(7.0, { message: 'La nota máxima es 7.0.' })
+  grade?: number;
+}
 
 export class UpdateTutorSpecificProfileDto {
-  @ApiPropertyOptional({
-    description:
-      'URL del Currículum Vitae del tutor (ej. LinkedIn, Google Drive)',
-    example: 'https://linkedin.com/in/tutorudp',
-  })
   @IsOptional()
-  @IsUrl()
+  @IsString()
+  bio?: string; // Propiedad 'bio' añadida
+
+  @IsOptional()
+  @IsUrl({}, { message: 'CV URL debe ser una URL válida.' })
   cv_url?: string;
 
-  @ApiPropertyOptional({
-    description: 'Descripción detallada de la experiencia del tutor',
-    example: 'Más de 5 años de experiencia en tutorías de cálculo y álgebra.',
-  })
   @IsOptional()
   @IsString()
   experience_details?: string;
 
-  @ApiPropertyOptional({
-    description: 'Email de contacto específico para tutorías',
-    example: 'tutor.calculo@example.com',
-  })
   @IsOptional()
-  @IsEmail()
+  @IsEmail(
+    {},
+    { message: 'El email de contacto para tutorías debe ser válido.' },
+  )
   tutoring_contact_email?: string;
 
-  @ApiPropertyOptional({
-    description: 'Número de teléfono para tutorías (opcional, formato chileno)',
-    example: '+56912345678',
-  })
   @IsOptional()
-  @IsPhoneNumber('CL') // Valida para Chile, ajusta si es necesario
+  // Cambiado null a undefined. Si se desea un país por defecto (ej. Chile), usar 'CL'.
+  @IsPhoneNumber(undefined, {
+    message: 'El teléfono de contacto para tutorías debe ser un número válido.',
+  })
   tutoring_phone?: string;
 
-  @ApiPropertyOptional({
-    type: [AvailabilityBlockDto],
-    description:
-      'Lista de bloques de disponibilidad del tutor. Enviar la lista completa para reemplazar la existente.',
-  })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => AvailabilityBlockDto)
   availability?: AvailabilityBlockDto[];
 
-  @ApiPropertyOptional({
-    type: [TutorCourseDto],
-    description:
-      'Lista de cursos que el tutor imparte. Enviar la lista completa para reemplazar la existente.',
-  })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => TutorCourseDto)
   courses?: TutorCourseDto[];
 }
-export { AvailabilityBlockDto, TutorCourseDto };

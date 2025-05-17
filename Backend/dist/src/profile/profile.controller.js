@@ -39,10 +39,13 @@ let ProfileController = class ProfileController {
         return this.profileService.getMyProfile(user.id);
     }
     async updateTutorSpecificProfile(user, dto) {
-        if (!user?.id)
+        if (!user?.id) {
             throw new common_1.UnauthorizedException('ID de usuario no encontrado en el token');
-        if (user.role !== client_1.Role.TUTOR && user.role !== client_1.Role.BOTH) {
-            throw new common_1.ForbiddenException('Solo los tutores pueden actualizar esta información.');
+        }
+        if (user.role !== client_1.Role.STUDENT &&
+            user.role !== client_1.Role.TUTOR &&
+            user.role !== client_1.Role.BOTH) {
+            throw new common_1.ForbiddenException('El rol del usuario no permite esta acción.');
         }
         await this.profileService.updateTutorSpecificProfile(user.id, dto);
         return this.profileService.getMyProfile(user.id);
@@ -85,20 +88,19 @@ __decorate([
 __decorate([
     (0, common_1.Patch)('me/tutor'),
     (0, swagger_1.ApiOperation)({
-        summary: 'Actualizar la información específica del perfil de tutor del usuario autenticado',
+        summary: 'Crear o actualizar la información específica del perfil de tutor del usuario autenticado',
     }),
     (0, swagger_1.ApiResponse)({
         status: 200,
-        description: 'Perfil de tutor actualizado.',
+        description: 'Perfil de tutor creado/actualizado.',
         type: view_user_profile_dto_1.ViewUserProfileDto,
     }),
     (0, swagger_1.ApiResponse)({ status: 400, description: 'Datos inválidos.' }),
     (0, swagger_1.ApiResponse)({ status: 401, description: 'No autorizado.' }),
     (0, swagger_1.ApiResponse)({
         status: 403,
-        description: 'Acción no permitida (usuario no es tutor).',
+        description: 'Acción no permitida (por ejemplo, si el rol no es STUDENT, TUTOR, o BOTH).',
     }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: 'Perfil de tutor no encontrado.' }),
     __param(0, (0, get_user_decorator_1.GetUser)()),
     __param(1, (0, common_1.Body)(new common_1.ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))),
     __metadata("design:type", Function),
