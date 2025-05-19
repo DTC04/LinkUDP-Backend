@@ -18,21 +18,30 @@ export class TutoriasController {
     try {
       return await this.tutoriasService.create(createTutoriaDto);
     } catch (error) {
-      // Manejo de errores específico si es necesario, por ejemplo, si el tutorId o courseId no existen
-      throw error; // Re-lanzar el error para que NestJS lo maneje
+      throw error; 
     }
   }
 
   @Get()
-  @ApiOperation({ summary: 'Listar todas las tutorías disponibles, con filtros opcionales' })
+  @ApiOperation({ summary: 'Listar todas las tutorías, con filtros opcionales' })
   @ApiQuery({ name: 'ramo', required: false, description: 'Filtrar tutorías por el nombre del ramo (curso)' })
   @ApiQuery({ name: 'horario', required: false, description: 'Filtrar tutorías por horario (funcionalidad pendiente de detalle)' })
+  @ApiQuery({ name: 'tutorId', required: false, type: Number, description: 'Filtrar tutorías por ID de tutor' })
+  @ApiQuery({ name: 'status', required: false, description: 'Filtrar tutorías por estado (e.g., AVAILABLE, CONFIRMED, PENDING). Puede ser un string o un array de strings.' })
+  @ApiQuery({ name: 'upcoming', required: false, type: Boolean, description: 'Filtrar solo tutorías futuras (start_time > ahora)'})
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Limitar el número de resultados devueltos.'})
   @ApiResponse({ status: 200, description: 'Lista de tutorías obtenida exitosamente.' })
-  async findAll(@Query('ramo') ramo?: string, @Query('horario') horario?: string): Promise<TutoringSession[]> {
-    const tutorias = await this.tutoriasService.findAll(ramo, horario);
+  async findAll(
+    @Query('ramo') ramo?: string,
+    @Query('horario') horario?: string,
+    @Query('tutorId', new ParseIntPipe({ optional: true })) tutorId?: number,
+    @Query('status') status?: string | string[], 
+    @Query('upcoming') upcoming?: string, 
+    @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
+  ): Promise<TutoringSession[]> {
+    const isUpcoming = upcoming === 'true';
+    const tutorias = await this.tutoriasService.findAll(ramo, horario, tutorId, status, isUpcoming, limit);
     if (tutorias.length === 0 && ramo) {
-      // Considerar si se debe devolver un 404 o un 200 con un array vacío y un mensaje.
-      // Por ahora, se devuelve un array vacío, el mensaje informativo se manejaría en el frontend.
     }
     return tutorias;
   }

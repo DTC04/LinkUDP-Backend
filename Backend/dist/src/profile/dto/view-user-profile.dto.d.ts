@@ -7,16 +7,16 @@ declare class UserBaseDto {
     photo_url: string | null;
     email_verified: boolean;
 }
+declare class CourseInterestViewDto {
+    courseId: number;
+    courseName: string;
+}
 declare class StudentProfileViewDto {
     university: string;
     career: string;
     study_year: number;
     bio: string | null;
     interests: CourseInterestViewDto[];
-}
-declare class CourseInterestViewDto {
-    courseId: number;
-    courseName: string;
 }
 declare class TutorCourseViewDto {
     courseId: number;
@@ -31,12 +31,15 @@ declare class AvailabilityBlockViewDto {
 }
 declare class TutorProfileViewDto {
     id: number;
-    bio: string;
+    bio: string | null;
     average_rating: number;
     cv_url: string | null;
     experience_details: string | null;
     tutoring_contact_email: string | null;
     tutoring_phone: string | null;
+    university?: string | null;
+    degree?: string | null;
+    academic_year?: string | null;
     courses: TutorCourseViewDto[];
     availability: AvailabilityBlockViewDto[];
 }

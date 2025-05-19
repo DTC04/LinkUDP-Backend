@@ -33,17 +33,29 @@ __decorate([
     __metadata("design:type", String)
 ], UserBaseDto.prototype, "email", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({ enum: client_1.Role }),
     __metadata("design:type", String)
 ], UserBaseDto.prototype, "role", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ nullable: true }),
+    (0, swagger_1.ApiPropertyOptional)({ type: String, nullable: true }),
     __metadata("design:type", Object)
 ], UserBaseDto.prototype, "photo_url", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Boolean)
 ], UserBaseDto.prototype, "email_verified", void 0);
+class CourseInterestViewDto {
+    courseId;
+    courseName;
+}
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], CourseInterestViewDto.prototype, "courseId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], CourseInterestViewDto.prototype, "courseName", void 0);
 class StudentProfileViewDto {
     university;
     career;
@@ -64,25 +76,13 @@ __decorate([
     __metadata("design:type", Number)
 ], StudentProfileViewDto.prototype, "study_year", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ nullable: true }),
+    (0, swagger_1.ApiPropertyOptional)({ type: String, nullable: true }),
     __metadata("design:type", Object)
 ], StudentProfileViewDto.prototype, "bio", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ type: () => [CourseInterestViewDto] }),
     __metadata("design:type", Array)
 ], StudentProfileViewDto.prototype, "interests", void 0);
-class CourseInterestViewDto {
-    courseId;
-    courseName;
-}
-__decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", Number)
-], CourseInterestViewDto.prototype, "courseId", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
-], CourseInterestViewDto.prototype, "courseName", void 0);
 class TutorCourseViewDto {
     courseId;
     courseName;
@@ -102,7 +102,7 @@ __decorate([
     __metadata("design:type", String)
 ], TutorCourseViewDto.prototype, "level", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ nullable: true }),
+    (0, swagger_1.ApiPropertyOptional)({ type: Number, nullable: true }),
     __metadata("design:type", Object)
 ], TutorCourseViewDto.prototype, "grade", void 0);
 class AvailabilityBlockViewDto {
@@ -115,11 +115,11 @@ __decorate([
     __metadata("design:type", String)
 ], AvailabilityBlockViewDto.prototype, "day_of_week", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({ example: '09:00', type: String }),
     __metadata("design:type", String)
 ], AvailabilityBlockViewDto.prototype, "start_time", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({ example: '11:00', type: String }),
     __metadata("design:type", String)
 ], AvailabilityBlockViewDto.prototype, "end_time", void 0);
 class TutorProfileViewDto {
@@ -130,6 +130,9 @@ class TutorProfileViewDto {
     experience_details;
     tutoring_contact_email;
     tutoring_phone;
+    university;
+    degree;
+    academic_year;
     courses;
     availability;
 }
@@ -138,29 +141,53 @@ __decorate([
     __metadata("design:type", Number)
 ], TutorProfileViewDto.prototype, "id", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
+    (0, swagger_1.ApiPropertyOptional)({ type: String, nullable: true }),
+    __metadata("design:type", Object)
 ], TutorProfileViewDto.prototype, "bio", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Number)
 ], TutorProfileViewDto.prototype, "average_rating", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ nullable: true }),
+    (0, swagger_1.ApiPropertyOptional)({ type: String, nullable: true }),
     __metadata("design:type", Object)
 ], TutorProfileViewDto.prototype, "cv_url", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ nullable: true }),
+    (0, swagger_1.ApiPropertyOptional)({ type: String, nullable: true }),
     __metadata("design:type", Object)
 ], TutorProfileViewDto.prototype, "experience_details", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ nullable: true }),
+    (0, swagger_1.ApiPropertyOptional)({ type: String, nullable: true }),
     __metadata("design:type", Object)
 ], TutorProfileViewDto.prototype, "tutoring_contact_email", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ nullable: true }),
+    (0, swagger_1.ApiPropertyOptional)({ type: String, nullable: true }),
     __metadata("design:type", Object)
 ], TutorProfileViewDto.prototype, "tutoring_phone", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Universidad del tutor',
+        type: String,
+        nullable: true,
+    }),
+    __metadata("design:type", Object)
+], TutorProfileViewDto.prototype, "university", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Carrera/Título del tutor',
+        type: String,
+        nullable: true,
+    }),
+    __metadata("design:type", Object)
+], TutorProfileViewDto.prototype, "degree", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Año de estudio o situación académica del tutor',
+        type: String,
+        nullable: true,
+    }),
+    __metadata("design:type", Object)
+], TutorProfileViewDto.prototype, "academic_year", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ type: () => [TutorCourseViewDto] }),
     __metadata("design:type", Array)

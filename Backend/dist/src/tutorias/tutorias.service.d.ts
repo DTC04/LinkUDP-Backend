@@ -6,7 +6,7 @@ export declare class TutoriasService {
     private prisma;
     constructor(prisma: PrismaService);
     create(createTutoriaDto: CreateTutoriaDto): Promise<TutoringSession>;
-    findAll(ramo?: string, horario?: string): Promise<TutoringSession[]>;
+    findAll(ramo?: string, horario?: string, tutorId?: number, status?: string | string[], upcoming?: boolean, limit?: number): Promise<TutoringSession[]>;
     findOne(id: number): Promise<TutoringSession | null>;
     update(id: number, updateTutoriaDto: UpdateTutoriaDto): Promise<TutoringSession>;
     remove(id: number): Promise<TutoringSession>;

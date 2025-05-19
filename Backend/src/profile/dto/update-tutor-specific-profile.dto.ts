@@ -1,71 +1,71 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+// Backend/src/profile/dto/update-tutor-specific-profile.dto.ts
 import {
-  IsArray,
-  IsEmail,
-  IsOptional,
   IsString,
+  IsOptional,
   IsUrl,
+  IsEmail,
+  IsPhoneNumber, // Asegúrate de que esta validación es la que deseas, o usa IsString
+  IsArray,
   ValidateNested,
-  IsPhoneNumber,
+  // Quita IsNotEmpty, IsEnum, IsNumber, Min, Max de aquí si se usan solo en sub-DTOs
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { AvailabilityBlockDto } from './availability-block.dto';
-import { TutorCourseDto } from './tutor-course.dto';
+import { AvailabilityBlockDto } from './availability-block.dto'; // Asumiendo que este DTO está bien definido
+import { TutorCourseDto } from './tutor-course.dto'; // Asumiendo que este DTO está bien definido
 
 export class UpdateTutorSpecificProfileDto {
-  @ApiPropertyOptional({
-    description:
-      'URL del Currículum Vitae del tutor (ej. LinkedIn, Google Drive)',
-    example: 'https://linkedin.com/in/tutorudp',
-  })
   @IsOptional()
-  @IsUrl()
+  @IsString()
+  bio?: string; // El 'bio' específico del TutorProfile, si se maneja aquí además del general en /profile/me
+
+  @IsOptional()
+  @IsUrl({}, { message: 'CV URL debe ser una URL válida.' })
   cv_url?: string;
 
-  @ApiPropertyOptional({
-    description: 'Descripción detallada de la experiencia del tutor',
-    example: 'Más de 5 años de experiencia en tutorías de cálculo y álgebra.',
-  })
   @IsOptional()
   @IsString()
   experience_details?: string;
 
-  @ApiPropertyOptional({
-    description: 'Email de contacto específico para tutorías',
-    example: 'tutor.calculo@example.com',
-  })
   @IsOptional()
-  @IsEmail()
+  @IsEmail(
+    {},
+    { message: 'El email de contacto para tutorías debe ser válido.' },
+  )
   tutoring_contact_email?: string;
 
-  @ApiPropertyOptional({
-    description: 'Número de teléfono para tutorías (opcional, formato chileno)',
-    example: '+56912345678',
-  })
   @IsOptional()
-  @IsPhoneNumber('CL') // Valida para Chile, ajusta si es necesario
+  @IsPhoneNumber(undefined, {
+    // O usa @IsString() si la validación de IsPhoneNumber es muy estricta/específica
+    message: 'El teléfono de contacto para tutorías debe ser un número válido.',
+  })
   tutoring_phone?: string;
 
-  @ApiPropertyOptional({
-    type: [AvailabilityBlockDto],
-    description:
-      'Lista de bloques de disponibilidad del tutor. Enviar la lista completa para reemplazar la existente.',
-  })
+  // --- NUEVOS CAMPOS DTO ---
+  @IsOptional()
+  @IsString()
+  university?: string;
+
+  @IsOptional()
+  @IsString()
+  degree?: string;
+
+  @IsOptional()
+  @IsString()
+  academic_year?: string;
+  // -------------------------
+
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => AvailabilityBlockDto)
   availability?: AvailabilityBlockDto[];
 
-  @ApiPropertyOptional({
-    type: [TutorCourseDto],
-    description:
-      'Lista de cursos que el tutor imparte. Enviar la lista completa para reemplazar la existente.',
-  })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => TutorCourseDto)
   courses?: TutorCourseDto[];
 }
-export { AvailabilityBlockDto, TutorCourseDto };
+
+// Re-exportar si es necesario y si estos DTOs no están ya en archivos separados como lo estaban antes
+// export { AvailabilityBlockDto, TutorCourseDto }; // Comentado porque ya los importas

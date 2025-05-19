@@ -104,6 +104,12 @@ model TutorProfile {
   tutoring_contact_email String? // Email específico para tutorías, si es diferente al de la cuenta
   tutoring_phone         String? // Teléfono específico para tutorías, opcional
 
+  // --- NUEVOS CAMPOS PARA INFORMACIÓN ACADÉMICA DEL TUTOR ---
+  university    String? // Nueva universidad del tutor
+  degree        String? // Nueva carrera/título del tutor
+  academic_year String? // Nuevo año de estudio/egreso del tutor (usamos String para flexibilidad: "1", "egresado", etc.)
+  // ---------------------------------------------------------
+
   // Relaciones existentes
   courses          TutorCourse[]
   availability     AvailabilityBlock[]

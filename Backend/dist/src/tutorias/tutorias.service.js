@@ -42,10 +42,25 @@ let TutoriasService = class TutoriasService {
             },
         });
     }
-    async findAll(ramo, horario) {
-        const where = {
-            status: 'AVAILABLE',
-        };
+    async findAll(ramo, horario, tutorId, status, upcoming, limit) {
+        const where = {};
+        if (tutorId) {
+            where.tutorId = tutorId;
+        }
+        if (status) {
+            if (Array.isArray(status)) {
+                const validStatuses = status.filter(s => Object.values(client_1.BookingStatus).includes(s));
+                if (validStatuses.length > 0) {
+                    where.status = { in: validStatuses };
+                }
+            }
+            else if (Object.values(client_1.BookingStatus).includes(status)) {
+                where.status = status;
+            }
+        }
+        else if (!tutorId) {
+            where.status = 'AVAILABLE';
+        }
         if (ramo) {
             where.course = {
                 name: {
@@ -54,18 +69,38 @@ let TutoriasService = class TutoriasService {
                 },
             };
         }
+        if (upcoming) {
+            where.start_time = {
+                gt: new Date(),
+            };
+        }
         if (horario) {
             console.warn('El filtro por horario aún no está completamente implementado.');
         }
         return this.prisma.tutoringSession.findMany({
             where,
+            take: limit,
             include: {
                 tutor: {
                     include: {
-                        user: true,
-                    },
+                        user: {
+                            select: { full_name: true, email: true, photo_url: true },
+                        }
+                    }
                 },
                 course: true,
+                bookings: {
+                    include: {
+                        studentProfile: {
+                            include: {
+                                user: { select: { full_name: true } }
+                            }
+                        }
+                    }
+                }
+            },
+            orderBy: {
+                start_time: 'asc',
             },
         });
     }
@@ -81,8 +116,8 @@ let TutoriasService = class TutoriasService {
                                 email: true,
                                 photo_url: true,
                             }
-                        },
-                    },
+                        }
+                    }
                 },
                 course: true,
             },

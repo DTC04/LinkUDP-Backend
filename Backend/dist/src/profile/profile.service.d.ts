@@ -5,6 +5,7 @@ import { UpdateTutorSpecificProfileDto } from './dto/update-tutor-specific-profi
 import { ViewUserProfileDto } from './dto/view-user-profile.dto';
 export declare class ProfileService {
     private prisma;
+    private readonly logger;
     constructor(prisma: PrismaService);
     getMyProfile(userId: number): Promise<ViewUserProfileDto>;
     updateUserProfile(userId: number, dto: UpdateUserProfileDto): Promise<User>;

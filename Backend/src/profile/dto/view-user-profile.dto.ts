@@ -1,5 +1,6 @@
+// Backend/src/profile/dto/view-user-profile.dto.ts
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Role, DayOfWeek } from '@prisma/client';
+import { Role, DayOfWeek } from '@prisma/client'; // Asegúrate que DayOfWeek esté importado
 
 class UserBaseDto {
   @ApiProperty()
@@ -8,25 +9,12 @@ class UserBaseDto {
   full_name: string;
   @ApiProperty()
   email: string;
-  @ApiProperty()
+  @ApiProperty({ enum: Role })
   role: Role;
-  @ApiProperty({ nullable: true })
+  @ApiPropertyOptional({ type: String, nullable: true }) // Corrección para Swagger con null
   photo_url: string | null;
   @ApiProperty()
   email_verified: boolean;
-}
-
-class StudentProfileViewDto {
-  @ApiProperty()
-  university: string;
-  @ApiProperty()
-  career: string;
-  @ApiProperty()
-  study_year: number;
-  @ApiProperty({ nullable: true })
-  bio: string | null;
-  @ApiProperty({ type: () => [CourseInterestViewDto] })
-  interests: CourseInterestViewDto[];
 }
 
 class CourseInterestViewDto {
@@ -36,46 +24,95 @@ class CourseInterestViewDto {
   courseName: string;
 }
 
+class StudentProfileViewDto {
+  // @ApiPropertyOptional() id?: number; // Si decides exponer el ID del StudentProfile
+  @ApiProperty()
+  university: string;
+  @ApiProperty()
+  career: string;
+  @ApiProperty()
+  study_year: number;
+  @ApiPropertyOptional({ type: String, nullable: true })
+  bio: string | null;
+  @ApiProperty({ type: () => [CourseInterestViewDto] })
+  interests: CourseInterestViewDto[];
+}
+
 class TutorCourseViewDto {
+  // @ApiPropertyOptional() id?: number; // ID de la relación TutorCourse
   @ApiProperty()
   courseId: number;
   @ApiProperty()
   courseName: string;
   @ApiProperty()
   level: string;
-  @ApiProperty({ nullable: true })
+  @ApiPropertyOptional({ type: Number, nullable: true })
   grade: number | null;
 }
 
 class AvailabilityBlockViewDto {
+  // @ApiPropertyOptional() id?: number; // ID del AvailabilityBlock
   @ApiProperty({ enum: DayOfWeek })
   day_of_week: DayOfWeek;
-  @ApiProperty()
-  start_time: string; // HH:MM
-  @ApiProperty()
-  end_time: string; // HH:MM
+  @ApiProperty({ example: '09:00', type: String }) // Ejemplo de formato
+  start_time: string;
+  @ApiProperty({ example: '11:00', type: String }) // Ejemplo de formato
+  end_time: string;
 }
 
+// --- ASEGÚRATE QUE ESTA CLASE ESTÉ ASÍ ---
 class TutorProfileViewDto {
   @ApiProperty()
-  id: number; 
-  @ApiProperty()
-  bio: string;
+  id: number;
+
+  @ApiPropertyOptional({ type: String, nullable: true })
+  bio: string | null;
+
   @ApiProperty()
   average_rating: number;
-  @ApiProperty({ nullable: true })
+
+  @ApiPropertyOptional({ type: String, nullable: true })
   cv_url: string | null;
-  @ApiProperty({ nullable: true })
+
+  @ApiPropertyOptional({ type: String, nullable: true })
   experience_details: string | null;
-  @ApiProperty({ nullable: true })
+
+  @ApiPropertyOptional({ type: String, nullable: true })
   tutoring_contact_email: string | null;
-  @ApiProperty({ nullable: true })
+
+  @ApiPropertyOptional({ type: String, nullable: true })
   tutoring_phone: string | null;
+
+  // --- NUEVOS CAMPOS DEFINIDOS AQUÍ ---
+  @ApiPropertyOptional({
+    description: 'Universidad del tutor',
+    type: String,
+    nullable: true,
+  })
+  university?: string | null;
+
+  @ApiPropertyOptional({
+    description: 'Carrera/Título del tutor',
+    type: String,
+    nullable: true,
+  })
+  degree?: string | null;
+
+  @ApiPropertyOptional({
+    description: 'Año de estudio o situación académica del tutor',
+    type: String,
+    nullable: true,
+  })
+  academic_year?: string | null;
+  // ------------------------------------
+
   @ApiProperty({ type: () => [TutorCourseViewDto] })
   courses: TutorCourseViewDto[];
+
   @ApiProperty({ type: () => [AvailabilityBlockViewDto] })
   availability: AvailabilityBlockViewDto[];
 }
+// -----------------------------------------
 
 export class ViewUserProfileDto {
   @ApiProperty({ type: UserBaseDto })

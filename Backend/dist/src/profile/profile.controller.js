@@ -28,22 +28,29 @@ let ProfileController = class ProfileController {
         this.profileService = profileService;
     }
     async getMyProfile(user) {
-        if (!user?.id)
+        if (!user?.id) {
             throw new common_1.UnauthorizedException('ID de usuario no encontrado en el token');
+        }
         return this.profileService.getMyProfile(user.id);
     }
     async updateUserProfile(user, dto) {
-        if (!user?.id)
+        if (!user?.id) {
             throw new common_1.UnauthorizedException('ID de usuario no encontrado en el token');
+        }
         await this.profileService.updateUserProfile(user.id, dto);
         return this.profileService.getMyProfile(user.id);
     }
     async updateTutorSpecificProfile(user, dto) {
-        if (!user?.id)
+        if (!user?.id) {
             throw new common_1.UnauthorizedException('ID de usuario no encontrado en el token');
-        if (user.role !== client_1.Role.TUTOR && user.role !== client_1.Role.BOTH) {
-            throw new common_1.ForbiddenException('Solo los tutores pueden actualizar esta información.');
         }
+        if (user.role !== client_1.Role.STUDENT &&
+            user.role !== client_1.Role.TUTOR &&
+            user.role !== client_1.Role.BOTH) {
+            console.warn(`Usuario con ID ${user.id} y rol ${user.role} intentó acceder a updateTutorSpecificProfile.`);
+            throw new common_1.ForbiddenException('Tu rol actual no permite realizar esta acción.');
+        }
+        console.log(`User ID: ${user.id} con Rol: ${user.role} está actualizando/creando perfil de tutor.`);
         await this.profileService.updateTutorSpecificProfile(user.id, dto);
         return this.profileService.getMyProfile(user.id);
     }
@@ -85,20 +92,19 @@ __decorate([
 __decorate([
     (0, common_1.Patch)('me/tutor'),
     (0, swagger_1.ApiOperation)({
-        summary: 'Actualizar la información específica del perfil de tutor del usuario autenticado',
+        summary: 'Crear o actualizar la información específica del perfil de tutor del usuario autenticado',
     }),
     (0, swagger_1.ApiResponse)({
         status: 200,
-        description: 'Perfil de tutor actualizado.',
+        description: 'Perfil de tutor creado/actualizado exitosamente.',
         type: view_user_profile_dto_1.ViewUserProfileDto,
     }),
     (0, swagger_1.ApiResponse)({ status: 400, description: 'Datos inválidos.' }),
     (0, swagger_1.ApiResponse)({ status: 401, description: 'No autorizado.' }),
     (0, swagger_1.ApiResponse)({
         status: 403,
-        description: 'Acción no permitida (usuario no es tutor).',
+        description: 'El rol actual del usuario no permite esta acción.',
     }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: 'Perfil de tutor no encontrado.' }),
     __param(0, (0, get_user_decorator_1.GetUser)()),
     __param(1, (0, common_1.Body)(new common_1.ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))),
     __metadata("design:type", Function),

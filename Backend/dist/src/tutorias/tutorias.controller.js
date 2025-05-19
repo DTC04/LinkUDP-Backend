@@ -31,8 +31,9 @@ let TutoriasController = class TutoriasController {
             throw error;
         }
     }
-    async findAll(ramo, horario) {
-        const tutorias = await this.tutoriasService.findAll(ramo, horario);
+    async findAll(ramo, horario, tutorId, status, upcoming, limit) {
+        const isUpcoming = upcoming === 'true';
+        const tutorias = await this.tutoriasService.findAll(ramo, horario, tutorId, status, isUpcoming, limit);
         if (tutorias.length === 0 && ramo) {
         }
         return tutorias;
@@ -64,14 +65,22 @@ __decorate([
 ], TutoriasController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Listar todas las tutorías disponibles, con filtros opcionales' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Listar todas las tutorías, con filtros opcionales' }),
     (0, swagger_1.ApiQuery)({ name: 'ramo', required: false, description: 'Filtrar tutorías por el nombre del ramo (curso)' }),
     (0, swagger_1.ApiQuery)({ name: 'horario', required: false, description: 'Filtrar tutorías por horario (funcionalidad pendiente de detalle)' }),
+    (0, swagger_1.ApiQuery)({ name: 'tutorId', required: false, type: Number, description: 'Filtrar tutorías por ID de tutor' }),
+    (0, swagger_1.ApiQuery)({ name: 'status', required: false, description: 'Filtrar tutorías por estado (e.g., AVAILABLE, CONFIRMED, PENDING). Puede ser un string o un array de strings.' }),
+    (0, swagger_1.ApiQuery)({ name: 'upcoming', required: false, type: Boolean, description: 'Filtrar solo tutorías futuras (start_time > ahora)' }),
+    (0, swagger_1.ApiQuery)({ name: 'limit', required: false, type: Number, description: 'Limitar el número de resultados devueltos.' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Lista de tutorías obtenida exitosamente.' }),
     __param(0, (0, common_1.Query)('ramo')),
     __param(1, (0, common_1.Query)('horario')),
+    __param(2, (0, common_1.Query)('tutorId', new common_1.ParseIntPipe({ optional: true }))),
+    __param(3, (0, common_1.Query)('status')),
+    __param(4, (0, common_1.Query)('upcoming')),
+    __param(5, (0, common_1.Query)('limit', new common_1.ParseIntPipe({ optional: true }))),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [String, String, Number, Object, String, Number]),
     __metadata("design:returntype", Promise)
 ], TutoriasController.prototype, "findAll", null);
 __decorate([

@@ -11,21 +11,27 @@ const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
-const tutorias_module_1 = require("./tutorias/tutorias.module");
 const prisma_module_1 = require("./prisma/prisma.module");
 const auth_module_1 = require("./auth/auth.module");
+const tutorias_module_1 = require("./tutorias/tutorias.module");
 const profile_module_1 = require("./profile/profile.module");
+const bookings_module_1 = require("./bookings/bookings.module");
+const courses_module_1 = require("./courses/courses.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            config_1.ConfigModule.forRoot({ isGlobal: true }),
-            tutorias_module_1.TutoriasModule,
+            config_1.ConfigModule.forRoot({
+                isGlobal: true,
+            }),
             prisma_module_1.PrismaModule,
             auth_module_1.AuthModule,
+            tutorias_module_1.TutoriasModule,
             profile_module_1.ProfileModule,
+            bookings_module_1.BookingsModule,
+            courses_module_1.CoursesModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

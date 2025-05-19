@@ -1,3 +1,4 @@
+// src/profile/profile.controller.ts
 import {
   Controller,
   Get,
@@ -7,6 +8,7 @@ import {
   ValidationPipe,
   ForbiddenException,
   UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
@@ -40,12 +42,13 @@ export class ProfileController {
   @ApiResponse({ status: 401, description: 'No autorizado.' })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado.' })
   async getMyProfile(
-    @GetUser() user: { id: number },
+    @GetUser() user: { id: number }, // Simplificado para obtener solo id si es lo único que se usa aquí
   ): Promise<ViewUserProfileDto> {
-    if (!user?.id)
+    if (!user?.id) {
       throw new UnauthorizedException(
         'ID de usuario no encontrado en el token',
       );
+    }
     return this.profileService.getMyProfile(user.id);
   }
 
@@ -56,7 +59,7 @@ export class ProfileController {
   @ApiResponse({
     status: 200,
     description: 'Perfil básico actualizado.',
-    type: ViewUserProfileDto,
+    type: ViewUserProfileDto, // Devolverá la vista completa del perfil
   })
   @ApiResponse({ status: 400, description: 'Datos inválidos.' })
   @ApiResponse({ status: 401, description: 'No autorizado.' })
@@ -65,48 +68,67 @@ export class ProfileController {
     @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
     dto: UpdateUserProfileDto,
   ): Promise<ViewUserProfileDto> {
-    if (!user?.id)
+    // Cambiado para devolver ViewUserProfileDto
+    if (!user?.id) {
       throw new UnauthorizedException(
         'ID de usuario no encontrado en el token',
       );
+    }
     await this.profileService.updateUserProfile(user.id, dto);
-    return this.profileService.getMyProfile(user.id);
+    return this.profileService.getMyProfile(user.id); // Devolver el perfil actualizado
   }
 
   @Patch('me/tutor')
   @ApiOperation({
     summary:
-      'Actualizar la información específica del perfil de tutor del usuario autenticado',
+      'Crear o actualizar la información específica del perfil de tutor del usuario autenticado',
   })
   @ApiResponse({
     status: 200,
-    description: 'Perfil de tutor actualizado.',
-    type: ViewUserProfileDto,
+    description: 'Perfil de tutor creado/actualizado exitosamente.',
+    type: ViewUserProfileDto, // Devolverá la vista completa del perfil
   })
   @ApiResponse({ status: 400, description: 'Datos inválidos.' })
   @ApiResponse({ status: 401, description: 'No autorizado.' })
   @ApiResponse({
     status: 403,
-    description: 'Acción no permitida (usuario no es tutor).',
+    description: 'El rol actual del usuario no permite esta acción.',
   })
-  @ApiResponse({ status: 404, description: 'Perfil de tutor no encontrado.' })
   async updateTutorSpecificProfile(
-    @GetUser() user: UserModel,
+    @GetUser() user: UserModel, // Aquí necesitamos el UserModel completo para acceder a user.role
     @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
     dto: UpdateTutorSpecificProfileDto,
   ): Promise<ViewUserProfileDto> {
-    if (!user?.id)
+    // Cambiado para devolver ViewUserProfileDto
+    if (!user?.id) {
       throw new UnauthorizedException(
         'ID de usuario no encontrado en el token',
       );
+    }
 
-    if (user.role !== Role.TUTOR && user.role !== Role.BOTH) {
+    // Un STUDENT puede llamar a este endpoint para convertirse en tutor.
+    // Un TUTOR o BOTH puede llamar para actualizar su perfil de tutor.
+    // Si el rol es algo distinto, no se permite.
+    if (
+      user.role !== Role.STUDENT &&
+      user.role !== Role.TUTOR &&
+      user.role !== Role.BOTH
+    ) {
+      console.warn(
+        `Usuario con ID ${user.id} y rol ${user.role} intentó acceder a updateTutorSpecificProfile.`,
+      );
       throw new ForbiddenException(
-        'Solo los tutores pueden actualizar esta información.',
+        'Tu rol actual no permite realizar esta acción.',
       );
     }
 
+    console.log(
+      `User ID: ${user.id} con Rol: ${user.role} está actualizando/creando perfil de tutor.`,
+    );
     await this.profileService.updateTutorSpecificProfile(user.id, dto);
+
+    // Devolver el perfil completo actualizado, que ahora debería tener rol BOTH si era STUDENT
+    // y el token del usuario se refrescará en el frontend la próxima vez que se necesite (o al re-loguear).
     return this.profileService.getMyProfile(user.id);
   }
 }

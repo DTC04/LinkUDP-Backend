@@ -1,15 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service'; // Asumiendo que tienes un servicio de Prisma
+import { PrismaService } from '../prisma/prisma.service'; 
 import { CreateTutoriaDto } from './dto/create-tutoria.dto';
 import { UpdateTutoriaDto } from './dto/update-tutoria.dto';
-import { TutoringSession, Prisma } from '@prisma/client';
+import { TutoringSession, Prisma, BookingStatus } from '@prisma/client'; 
 
 @Injectable()
 export class TutoriasService {
   constructor(private prisma: PrismaService) {}
 
   async create(createTutoriaDto: CreateTutoriaDto): Promise<TutoringSession> {
-    // Validar que todos los campos estén completos antes de publicar
     if (
       !createTutoriaDto.tutorId ||
       !createTutoriaDto.courseId ||
@@ -33,15 +32,37 @@ export class TutoriasService {
         end_time: new Date(createTutoriaDto.end_time),
         location: createTutoriaDto.location,
         notes: createTutoriaDto.notes,
-        // status se establece por defecto a AVAILABLE según el schema
       },
     });
   }
 
-  async findAll(ramo?: string, horario?: string): Promise<TutoringSession[]> {
-    const where: Prisma.TutoringSessionWhereInput = {
-      status: 'AVAILABLE', // Solo mostrar tutorías disponibles
-    };
+  async findAll(
+    ramo?: string,
+    horario?: string, 
+    tutorId?: number,
+    status?: string | string[],
+    upcoming?: boolean,
+    limit?: number,
+  ): Promise<TutoringSession[]> {
+    const where: Prisma.TutoringSessionWhereInput = {};
+
+    if (tutorId) {
+      where.tutorId = tutorId;
+    }
+
+    if (status) {
+      if (Array.isArray(status)) {
+        const validStatuses = status.filter(s => Object.values(BookingStatus).includes(s as BookingStatus));
+        if (validStatuses.length > 0) {
+          where.status = { in: validStatuses as BookingStatus[] };
+        }
+      } else if (Object.values(BookingStatus).includes(status as BookingStatus)) {
+        where.status = status as BookingStatus;
+      }
+    } else if (!tutorId) {
+      where.status = 'AVAILABLE';
+    }
+
 
     if (ramo) {
       where.course = {
@@ -51,27 +72,42 @@ export class TutoriasService {
         },
       };
     }
+    
+    if (upcoming) {
+      where.start_time = {
+        gt: new Date(), 
+      };
+    }
 
-    // El filtro por horario es más complejo y puede requerir lógica adicional
-    // dependiendo de cómo se almacenen y consulten los horarios.
-    // Por ahora, este es un placeholder.
     if (horario) {
-      // Ejemplo: si 'horario' es un día específico como "LUNES"
-      // Esto asume que tienes una forma de relacionar 'horario' con 'day_of_week' en AvailabilityBlock
-      // y luego filtrar TutoringSession basadas en eso.
-      // Esta parte necesitará una implementación más detallada basada en tu modelo de datos exacto.
       console.warn('El filtro por horario aún no está completamente implementado.');
     }
 
     return this.prisma.tutoringSession.findMany({
       where,
+      take: limit, 
       include: {
         tutor: {
           include: {
-            user: true, // Para obtener el perfil del tutor
-          },
+            user: { 
+              select: { full_name: true, email: true, photo_url: true },
+            }
+            
+          }
         },
-        course: true, // Para obtener el nombre del ramo
+        course: true,
+        bookings: { 
+          include: {
+            studentProfile: {
+              include: {
+                user: {select: {full_name: true}}
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        start_time: 'asc', 
       },
     });
   }
@@ -80,20 +116,19 @@ export class TutoriasService {
     const tutoria = await this.prisma.tutoringSession.findUnique({
       where: { id },
       include: {
-        tutor: {
+        tutor: { 
           include: {
-            user: { // Para obtener full_name, email, photo_url del User asociado al TutorProfile
+            user: {
               select: {
                 full_name: true,
-                email: true,
+                email: true, 
                 photo_url: true,
               }
-            },
-            // Aquí puedes incluir otros campos de TutorProfile si son necesarios
-          },
+            }
+            
+          }
         },
-        course: true, // Para obtener detalles del curso/ramo
-        // Considera si necesitas incluir AvailabilityBlock aquí o manejarlo por separado
+        course: true, 
       },
     });
     if (!tutoria) {

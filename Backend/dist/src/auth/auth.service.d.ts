@@ -35,5 +35,7 @@ export declare class AuthService {
             updated_at: Date;
         };
         access_token: string;
-    } | null>;
+    }>;
+    private logAttempt;
+    private isUserTemporarilyBlocked;
 }

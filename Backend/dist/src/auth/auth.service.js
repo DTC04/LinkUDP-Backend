@@ -27,7 +27,7 @@ let AuthService = class AuthService {
             where: { email: dto.email },
         });
         if (userExists) {
-            throw new Error('Ya existe un usuario con ese correo');
+            throw new common_1.HttpException('El correo electrónico ya está registrado.', common_1.HttpStatus.CONFLICT);
         }
         const hashedPassword = await bcrypt.hash(dto.password, 10);
         const user = await this.prisma.user.create({
@@ -69,19 +69,52 @@ let AuthService = class AuthService {
             where: { email: dto.email },
         });
         if (!user || !user.password) {
-            return null;
+            await this.logAttempt(null, false);
+            throw new common_1.UnauthorizedException('Credenciales inválidas');
+        }
+        const isBlocked = await this.isUserTemporarilyBlocked(user.id);
+        if (isBlocked) {
+            throw new common_1.UnauthorizedException('Demasiados intentos fallidos. Inténtalo más tarde.');
         }
         const isMatch = await bcrypt.compare(dto.password, user.password);
+        await this.logAttempt(user.id, isMatch);
         if (!isMatch) {
-            return null;
+            throw new common_1.UnauthorizedException('Credenciales inválidas');
         }
         const token = this.jwt.sign({
             sub: user.id,
             email: user.email,
             role: user.role,
         });
-        const { password: loginPassword, ...safeLoggedInUser } = user;
-        return { user: safeLoggedInUser, access_token: token };
+        const { password: _, ...safeUser } = user;
+        return { user: safeUser, access_token: token };
+    }
+    async logAttempt(userId, success) {
+        if (userId) {
+            await this.prisma.loginAttempt.create({
+                data: {
+                    userId,
+                    success,
+                },
+            });
+        }
+    }
+    async isUserTemporarilyBlocked(userId) {
+        const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+        const recentAttempts = await this.prisma.loginAttempt.findMany({
+            where: {
+                userId,
+                attempted_at: {
+                    gte: fifteenMinutesAgo,
+                },
+            },
+            orderBy: {
+                attempted_at: 'desc',
+            },
+            take: 5,
+        });
+        const lastFive = recentAttempts.slice(0, 5);
+        return lastFive.length === 5 && lastFive.every(a => !a.success);
     }
 };
 exports.AuthService = AuthService;
