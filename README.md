@@ -39,6 +39,7 @@ cp .env.example .env
 Ejemplo de contenido:
 env
 DATABASE_URL="postgresql://postgres:admin@localhost:5432/linkudp"
+JWT_SECRET="estaEsUnaClaveSuperSecretaMuyLargaYCompleja123!@#"
 ```
 ## Revisión puerto 5432
 ### Revisar si hay una Bases de datos en el puerto 5432
