@@ -22,6 +22,7 @@ const swagger_1 = require("@nestjs/swagger");
 const client_1 = require("@prisma/client");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const get_user_decorator_1 = require("../auth/get-user.decorator");
+const public_decorator_1 = require("../auth/public.decorator");
 let ProfileController = class ProfileController {
     profileService;
     constructor(profileService) {
@@ -53,6 +54,16 @@ let ProfileController = class ProfileController {
         console.log(`User ID: ${user.id} con Rol: ${user.role} está actualizando/creando perfil de tutor.`);
         await this.profileService.updateTutorSpecificProfile(user.id, dto);
         return this.profileService.getMyProfile(user.id);
+    }
+    async getPublicTutorProfile(tutorId) {
+        const tutorProfile = await this.profileService.getPublicTutorProfileById(tutorId);
+        if (!tutorProfile || !tutorProfile.user) {
+            throw new common_1.NotFoundException('Perfil de tutor no encontrado o datos de usuario incompletos.');
+        }
+        if (tutorProfile.user.role !== client_1.Role.TUTOR && tutorProfile.user.role !== client_1.Role.BOTH) {
+            throw new common_1.NotFoundException('Este usuario no es un tutor o no tiene un perfil de tutor público.');
+        }
+        return tutorProfile;
     }
 };
 exports.ProfileController = ProfileController;
@@ -111,6 +122,21 @@ __decorate([
     __metadata("design:paramtypes", [Object, update_tutor_specific_profile_dto_1.UpdateTutorSpecificProfileDto]),
     __metadata("design:returntype", Promise)
 ], ProfileController.prototype, "updateTutorSpecificProfile", null);
+__decorate([
+    (0, public_decorator_1.Public)(),
+    (0, common_1.Get)('tutor/:tutorId'),
+    (0, swagger_1.ApiOperation)({ summary: 'Obtener el perfil público de un tutor por ID' }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Perfil público del tutor obtenido exitosamente.',
+        type: view_user_profile_dto_1.ViewUserProfileDto,
+    }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Tutor no encontrado.' }),
+    __param(0, (0, common_1.Param)('tutorId', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", Promise)
+], ProfileController.prototype, "getPublicTutorProfile", null);
 exports.ProfileController = ProfileController = __decorate([
     (0, swagger_1.ApiTags)('profile'),
     (0, swagger_1.ApiBearerAuth)(),

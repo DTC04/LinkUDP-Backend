@@ -9,6 +9,8 @@ import {
   ForbiddenException,
   UnauthorizedException,
   NotFoundException,
+  Param,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
@@ -24,11 +26,12 @@ import { User as UserModel, Role } from '@prisma/client';
 
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { GetUser } from '../auth/get-user.decorator';
+import { Public } from '../auth/public.decorator'; // Assuming you have a Public decorator
 
 @ApiTags('profile')
 @ApiBearerAuth()
 @Controller('profile')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard) // Apply guard to the whole controller
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
@@ -94,6 +97,7 @@ export class ProfileController {
     status: 403,
     description: 'El rol actual del usuario no permite esta acción.',
   })
+  // No longer need @UseGuards here if applied at controller level
   async updateTutorSpecificProfile(
     @GetUser() user: UserModel, // Aquí necesitamos el UserModel completo para acceder a user.role
     @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
@@ -130,5 +134,30 @@ export class ProfileController {
     // Devolver el perfil completo actualizado, que ahora debería tener rol BOTH si era STUDENT
     // y el token del usuario se refrescará en el frontend la próxima vez que se necesite (o al re-loguear).
     return this.profileService.getMyProfile(user.id);
+  }
+
+  @Public() // Mark this route as public
+  @Get('tutor/:tutorId')
+  @ApiOperation({ summary: 'Obtener el perfil público de un tutor por ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Perfil público del tutor obtenido exitosamente.',
+    type: ViewUserProfileDto, // Or a more specific DTO for public view if needed
+  })
+  @ApiResponse({ status: 404, description: 'Tutor no encontrado.' })
+  async getPublicTutorProfile(
+    @Param('tutorId', ParseIntPipe) tutorId: number,
+  ): Promise<ViewUserProfileDto> {
+    const tutorProfile = await this.profileService.getPublicTutorProfileById(
+      tutorId,
+    );
+    if (!tutorProfile || !tutorProfile.user) { // Added check for tutorProfile.user
+      throw new NotFoundException('Perfil de tutor no encontrado o datos de usuario incompletos.');
+    }
+    // Ensure the user is indeed a tutor or has a tutor profile
+    if (tutorProfile.user.role !== Role.TUTOR && tutorProfile.user.role !== Role.BOTH) {
+        throw new NotFoundException('Este usuario no es un tutor o no tiene un perfil de tutor público.');
+    }
+    return tutorProfile;
   }
 }
