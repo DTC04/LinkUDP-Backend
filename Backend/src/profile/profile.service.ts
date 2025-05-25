@@ -115,7 +115,7 @@ export class ProfileService {
           grade: tc.grade,
         })),
         availability: user.tutorProfile.availability.map((ab) => ({
-          // id: ab.id, // Si ViewUserProfileDto.AvailabilityBlockViewDto tiene id
+          id: ab.id, // Ensure the ID from the database is included
           day_of_week: ab.day_of_week,
           start_time: formatTime(ab.start_time),
           end_time: formatTime(ab.end_time),
@@ -485,5 +485,94 @@ export class ProfileService {
         'Error al actualizar el perfil específico del tutor.',
       );
     }
+  }
+
+  async getPublicTutorProfileById(
+    userId: number,
+  ): Promise<ViewUserProfileDto | null> {
+    this.logger.debug(
+      `Fetching public tutor profile for userId: ${userId}`,
+    );
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+        // Ensure we are fetching a user who is actually a tutor
+        // OR (role: Role.TUTOR, role: Role.BOTH) - This is implicitly handled by checking tutorProfile existence
+      },
+      include: {
+        // No studentProfile needed for public tutor view usually
+        tutorProfile: {
+          include: {
+            courses: {
+              include: {
+                course: { select: { name: true, id: true } },
+              },
+            },
+            availability: true, // Assuming availability is public
+          },
+        },
+      },
+    });
+
+    if (!user || !user.tutorProfile) {
+      // If user not found, or user found but has no tutorProfile
+      this.logger.warn(
+        `Public tutor profile not found for userId: ${userId} (User exists: ${!!user}, TutorProfile exists: ${!!user?.tutorProfile})`,
+      );
+      return null;
+    }
+
+    this.logger.debug(
+      `Raw availability for tutorProfileId ${user.tutorProfile.id} (userId: ${userId}): ${JSON.stringify(user.tutorProfile.availability)}`,
+    );
+    
+    // Double check role, although presence of tutorProfile should imply TUTOR or BOTH
+    if (user.role !== Role.TUTOR && user.role !== Role.BOTH) {
+        this.logger.warn(`User ${userId} has a tutor profile but an inconsistent role: ${user.role}`);
+        // Depending on business logic, you might still return the profile or treat as not found.
+        // For now, let's treat as not found if role is not TUTOR/BOTH.
+        return null;
+    }
+
+
+    const response: ViewUserProfileDto = {
+      user: {
+        id: user.id,
+        full_name: user.full_name,
+        email: user.email, // Consider if public email should be tutor_contact_email
+        role: user.role,
+        photo_url: user.photo_url,
+        email_verified: user.email_verified, // Usually not public
+      },
+      // studentProfile is not included for public tutor view
+    };
+
+    if (user.tutorProfile) {
+      response.tutorProfile = {
+        id: user.tutorProfile.id,
+        bio: user.tutorProfile.bio,
+        average_rating: user.tutorProfile.average_rating, // May or may not be public
+        cv_url: user.tutorProfile.cv_url, // Usually not public
+        experience_details: user.tutorProfile.experience_details,
+        tutoring_contact_email: user.tutorProfile.tutoring_contact_email,
+        tutoring_phone: user.tutorProfile.tutoring_phone, // Usually not public
+        university: user.tutorProfile.university,
+        degree: user.tutorProfile.degree,
+        academic_year: user.tutorProfile.academic_year,
+        courses: user.tutorProfile.courses.map((tc) => ({
+          courseId: tc.courseId,
+          courseName: tc.course.name,
+          level: tc.level,
+          grade: tc.grade,
+        })),
+        availability: user.tutorProfile.availability.map((ab) => ({
+          id: ab.id, // Ensure the ID from the database is included
+          day_of_week: ab.day_of_week,
+          start_time: formatTime(ab.start_time),
+          end_time: formatTime(ab.end_time),
+        })),
+      };
+    }
+    return response;
   }
 }
