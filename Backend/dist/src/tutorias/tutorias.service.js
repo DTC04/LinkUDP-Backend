@@ -84,7 +84,7 @@ let TutoriasService = class TutoriasService {
                 tutor: {
                     include: {
                         user: {
-                            select: { full_name: true, email: true, photo_url: true },
+                            select: { id: true, full_name: true, email: true, photo_url: true },
                         }
                     }
                 },
@@ -112,6 +112,7 @@ let TutoriasService = class TutoriasService {
                     include: {
                         user: {
                             select: {
+                                id: true,
                                 full_name: true,
                                 email: true,
                                 photo_url: true,

@@ -4,25 +4,49 @@ import {
   ExecutionContext,
   Logger,
   UnauthorizedException,
-} from '@nestjs/common'; // Logger
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Observable } from 'rxjs';
+import { Reflector } from '@nestjs/core';
+import { IS_PUBLIC_KEY } from './public.decorator';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-  private readonly logger = new Logger(JwtAuthGuard.name); // Logger instance
+  private readonly logger = new Logger(JwtAuthGuard.name);
+
+  constructor(private reflector: Reflector) {
+    super();
+  }
 
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
-    this.logger.log('JwtAuthGuard canActivate called'); // Log guard activation
+    this.logger.log('JwtAuthGuard canActivate called');
+
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (isPublic) {
+      this.logger.log('Public route detected, bypassing JWT validation.');
+      return true;
+    }
+
     const request = context.switchToHttp().getRequest();
     const authHeader = request.headers.authorization;
-    this.logger.log(`Authorization header: ${authHeader}`); // Log el header
+    this.logger.log(`Authorization header: ${authHeader}`);
 
-    // Puedes añadir más lógica aquí si es necesario, pero primero veamos si el token llega
     const can = super.canActivate(context);
-    this.logger.log(`super.canActivate result: ${JSON.stringify(can)}`); // Loguear el resultado de la validación
+    // super.canActivate(context) can return a Promise or Observable,
+    // so we need to handle that if we want to log its resolved value.
+    // For simplicity here, we'll just return it.
+    // If you need to log the result, you'd do something like:
+    // return (async () => {
+    //   const result = await super.canActivate(context);
+    //   this.logger.log(`super.canActivate result: ${JSON.stringify(result)}`);
+    //   return result;
+    // })();
     return can;
   }
 

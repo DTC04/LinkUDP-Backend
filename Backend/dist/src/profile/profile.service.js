@@ -97,6 +97,7 @@ let ProfileService = ProfileService_1 = class ProfileService {
                     grade: tc.grade,
                 })),
                 availability: user.tutorProfile.availability.map((ab) => ({
+                    id: ab.id,
                     day_of_week: ab.day_of_week,
                     start_time: formatTime(ab.start_time),
                     end_time: formatTime(ab.end_time),
@@ -342,6 +343,72 @@ let ProfileService = ProfileService_1 = class ProfileService {
             }
             throw new common_1.InternalServerErrorException('Error al actualizar el perfil específico del tutor.');
         }
+    }
+    async getPublicTutorProfileById(userId) {
+        this.logger.debug(`Fetching public tutor profile for userId: ${userId}`);
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: userId,
+            },
+            include: {
+                tutorProfile: {
+                    include: {
+                        courses: {
+                            include: {
+                                course: { select: { name: true, id: true } },
+                            },
+                        },
+                        availability: true,
+                    },
+                },
+            },
+        });
+        if (!user || !user.tutorProfile) {
+            this.logger.warn(`Public tutor profile not found for userId: ${userId} (User exists: ${!!user}, TutorProfile exists: ${!!user?.tutorProfile})`);
+            return null;
+        }
+        this.logger.debug(`Raw availability for tutorProfileId ${user.tutorProfile.id} (userId: ${userId}): ${JSON.stringify(user.tutorProfile.availability)}`);
+        if (user.role !== client_1.Role.TUTOR && user.role !== client_1.Role.BOTH) {
+            this.logger.warn(`User ${userId} has a tutor profile but an inconsistent role: ${user.role}`);
+            return null;
+        }
+        const response = {
+            user: {
+                id: user.id,
+                full_name: user.full_name,
+                email: user.email,
+                role: user.role,
+                photo_url: user.photo_url,
+                email_verified: user.email_verified,
+            },
+        };
+        if (user.tutorProfile) {
+            response.tutorProfile = {
+                id: user.tutorProfile.id,
+                bio: user.tutorProfile.bio,
+                average_rating: user.tutorProfile.average_rating,
+                cv_url: user.tutorProfile.cv_url,
+                experience_details: user.tutorProfile.experience_details,
+                tutoring_contact_email: user.tutorProfile.tutoring_contact_email,
+                tutoring_phone: user.tutorProfile.tutoring_phone,
+                university: user.tutorProfile.university,
+                degree: user.tutorProfile.degree,
+                academic_year: user.tutorProfile.academic_year,
+                courses: user.tutorProfile.courses.map((tc) => ({
+                    courseId: tc.courseId,
+                    courseName: tc.course.name,
+                    level: tc.level,
+                    grade: tc.grade,
+                })),
+                availability: user.tutorProfile.availability.map((ab) => ({
+                    id: ab.id,
+                    day_of_week: ab.day_of_week,
+                    start_time: formatTime(ab.start_time),
+                    end_time: formatTime(ab.end_time),
+                })),
+            };
+        }
+        return response;
     }
 };
 exports.ProfileService = ProfileService;

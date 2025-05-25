@@ -13,4 +13,5 @@ export declare class ProfileController {
         id: number;
     }, dto: UpdateUserProfileDto): Promise<ViewUserProfileDto>;
     updateTutorSpecificProfile(user: UserModel, dto: UpdateTutorSpecificProfileDto): Promise<ViewUserProfileDto>;
+    getPublicTutorProfile(tutorId: number): Promise<ViewUserProfileDto>;
 }

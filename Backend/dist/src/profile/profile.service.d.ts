@@ -10,4 +10,5 @@ export declare class ProfileService {
     getMyProfile(userId: number): Promise<ViewUserProfileDto>;
     updateUserProfile(userId: number, dto: UpdateUserProfileDto): Promise<User>;
     updateTutorSpecificProfile(userId: number, dto: UpdateTutorSpecificProfileDto): Promise<TutorProfile>;
+    getPublicTutorProfileById(userId: number): Promise<ViewUserProfileDto | null>;
 }
