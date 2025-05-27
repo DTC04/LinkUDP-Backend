@@ -8,6 +8,7 @@ import { TutoriasModule } from './tutorias/tutorias.module';
 import { ProfileModule } from './profile/profile.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { CoursesModule } from './courses/courses.module'; 
+import { AvailabilityModule } from './availability/availability.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { CoursesModule } from './courses/courses.module';
     ProfileModule,
     BookingsModule,
     CoursesModule, 
+    AvailabilityModule,
   ],
   controllers: [AppController],
   providers: [AppService],

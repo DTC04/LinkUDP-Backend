@@ -99,8 +99,8 @@ let ProfileService = ProfileService_1 = class ProfileService {
                 availability: user.tutorProfile.availability.map((ab) => ({
                     id: ab.id,
                     day_of_week: ab.day_of_week,
-                    start_time: formatTime(ab.start_time),
-                    end_time: formatTime(ab.end_time),
+                    start_time: ab.start_time.toISOString(),
+                    end_time: ab.end_time.toISOString(),
                 })),
             };
         }
