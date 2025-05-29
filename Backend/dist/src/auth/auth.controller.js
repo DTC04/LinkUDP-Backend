@@ -17,11 +17,15 @@ const common_1 = require("@nestjs/common");
 const auth_service_1 = require("./auth.service");
 const register_dto_1 = require("./dto/register.dto");
 const login_dto_1 = require("./dto/login.dto");
+const passport_1 = require("@nestjs/passport");
+const jwt_auth_guard_1 = require("./jwt-auth.guard");
+const get_user_decorator_1 = require("./get-user.decorator");
 const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     path: '/',
     sameSite: 'lax',
+    maxAge: 24 * 60 * 60 * 1000,
 };
 let AuthController = class AuthController {
     authService;
@@ -30,28 +34,73 @@ let AuthController = class AuthController {
     }
     async register(dto, res) {
         const result = await this.authService.register(dto);
-        if (result && result.access_token) {
-            res.cookie('access_token', result.access_token, {
-                ...cookieOptions,
-            });
+        if (result?.access_token && typeof result.access_token === 'string') {
+            res.cookie('access_token', result.access_token, cookieOptions);
             return result;
         }
         throw new Error('Error durante el registro');
     }
     async login(dto, res) {
         const result = await this.authService.login(dto);
-        if (!result) {
+        if (!result || typeof result.access_token !== 'string') {
             throw new common_1.UnauthorizedException('Credenciales inválidas');
         }
-        res.cookie('access_token', result.access_token, {
-            ...cookieOptions,
-            maxAge: 24 * 60 * 60 * 1000,
-        });
+        res.cookie('access_token', result.access_token, cookieOptions);
         return result;
     }
     async logout(res) {
         res.clearCookie('access_token', cookieOptions);
         return { message: 'Logout exitoso' };
+    }
+    async googleAuth() {
+    }
+    async googleRedirect(req, res) {
+        if (!req.user) {
+            throw new common_1.UnauthorizedException('Usuario de Google no disponible');
+        }
+        const { token, isNewUser, user } = await this.authService.loginWithGoogle(req.user);
+        if (!token || typeof token !== 'string') {
+            throw new Error('Fallo al generar el token de Google');
+        }
+        res.cookie('access_token', token, cookieOptions);
+        let redirectTo = 'http://localhost:3001/dashboard';
+        if (isNewUser) {
+            redirectTo = 'http://localhost:3001/onboarding/select-role';
+        }
+        else if (user.role === register_dto_1.Role.STUDENT) {
+            redirectTo = 'http://localhost:3001/dashboard/student';
+        }
+        else if (user.role === register_dto_1.Role.TUTOR) {
+            redirectTo = 'http://localhost:3001/dashboard/tutor';
+        }
+        res.redirect(redirectTo);
+    }
+    async assignRole(body, res) {
+        const { userId, role } = body;
+        if (role !== register_dto_1.Role.STUDENT && role !== register_dto_1.Role.TUTOR) {
+            throw new common_1.HttpException('Rol inválido. Solo se permite STUDENT o TUTOR.', common_1.HttpStatus.BAD_REQUEST);
+        }
+        await this.authService.assignRole(userId, role);
+        const user = await this.authService['prisma'].user.findUnique({
+            where: { id: userId },
+        });
+        if (!user) {
+            throw new common_1.UnauthorizedException('Usuario no encontrado');
+        }
+        const token = this.authService['jwt'].sign({
+            sub: user.id,
+            email: user.email,
+            role: user.role,
+        });
+        res.cookie('access_token', token, cookieOptions);
+        const redirectTo = role === register_dto_1.Role.STUDENT
+            ? 'http://localhost:3001/onboarding/student'
+            : 'http://localhost:3001/onboarding/tutor';
+        return { message: 'Rol asignado', redirectTo };
+    }
+    getMe(user) {
+        const { password, ...safeUser } = user;
+        return safeUser;
     }
 };
 exports.AuthController = AuthController;
@@ -78,6 +127,38 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "logout", null);
+__decorate([
+    (0, common_1.Get)('google'),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('google')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "googleAuth", null);
+__decorate([
+    (0, common_1.Get)('google/redirect'),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('google')),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "googleRedirect", null);
+__decorate([
+    (0, common_1.Post)('assign-role'),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Res)({ passthrough: true })),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "assignRole", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('me'),
+    __param(0, (0, get_user_decorator_1.GetUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "getMe", null);
 exports.AuthController = AuthController = __decorate([
     (0, common_1.Controller)('auth'),
     __metadata("design:paramtypes", [auth_service_1.AuthService])

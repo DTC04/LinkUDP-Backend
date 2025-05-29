@@ -1,30 +1,50 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable, UnauthorizedException, Logger } from '@nestjs/common'; 
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Role } from '@prisma/client';
-import { ConfigService } from '@nestjs/config'; 
+import { ConfigService } from '@nestjs/config';
 
 interface JwtPayload {
   sub: number;
   email: string;
   role: Role;
-  
 }
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  private readonly logger = new Logger(JwtStrategy.name); // Instancia del Logger
+  private readonly logger = new Logger(JwtStrategy.name);
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly configService: ConfigService, // Inyectar ConfigService
+    private readonly configService: ConfigService,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: false, // Es importante que sea false para rechazar tokens expirados
-      secretOrKey: configService.get<string>('JWT_SECRET') || 'supersecret', // Usar ConfigService
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (req) => {
+          try {
+            const raw = req?.cookies?.['access_token'];
+            if (!raw) return null;
+
+            // Si es una cookie serializada tipo j:{...}
+            if (typeof raw === 'string' && raw.startsWith('j:')) {
+              const decoded = decodeURIComponent(raw.slice(2));
+              const parsed = JSON.parse(decoded);
+              return parsed.access_token;
+            }
+
+            // Si ya es el JWT plano
+            return raw;
+          } catch (e) {
+            console.warn('Error parsing access_token cookie:', e);
+            return null;
+          }
+        },
+      ]),
+      ignoreExpiration: false,
+      secretOrKey: configService.get<string>('JWT_SECRET') || 'supersecret',
     });
+
     this.logger.log(
       `JwtStrategy initialized. Using secret: ${
         configService.get<string>('JWT_SECRET') ? 'from ConfigService (****)' : "'supersecret'"
@@ -53,21 +73,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       );
     }
 
-    // Validar si el rol en el payload coincide con el rol en la BD (opcional, pero buena práctica)
     if (user.role !== payload.role) {
       this.logger.warn(
         `Role mismatch for user ${user.email} (ID: ${user.id}). JWT role: ${payload.role}, DB role: ${user.role}.`,
       );
-      // Dependiendo de tu política de seguridad, podrías invalidar el token aquí
-      // throw new UnauthorizedException('User role changed, please re-authenticate.');
     }
 
     this.logger.log(
       `User ${user.email} (ID: ${user.id}, Role: ${user.role}) validated successfully.`,
     );
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...result } = user; // Quitar la contraseña del objeto usuario que se adjuntará a la request
-    return result; // Este 'result' será adjuntado a `request.user`
+    const { password, ...result } = user;
+    return result;
   }
 }
