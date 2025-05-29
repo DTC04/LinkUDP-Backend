@@ -89,6 +89,57 @@ let AuthService = class AuthService {
         const { password: _, ...safeUser } = user;
         return { user: safeUser, access_token: token };
     }
+    async loginWithGoogle(googleUser) {
+        const { email, name } = googleUser;
+        let user = await this.prisma.user.findUnique({ where: { email } });
+        const isNewUser = !user;
+        if (isNewUser) {
+            user = await this.prisma.user.create({
+                data: {
+                    email,
+                    full_name: name,
+                    role: 'STUDENT',
+                },
+            });
+        }
+        if (!user) {
+            throw new Error('No se pudo crear o recuperar el usuario de Google');
+        }
+        const token = this.jwt.sign({
+            sub: user.id,
+            email: user.email,
+            role: user.role,
+        });
+        return { token, isNewUser, user };
+    }
+    async assignRole(userId, role) {
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: { role },
+        });
+        if (role === register_dto_1.Role.STUDENT) {
+            await this.prisma.studentProfile.upsert({
+                where: { userId },
+                update: {},
+                create: {
+                    userId,
+                    university: '',
+                    career: '',
+                    study_year: 0,
+                },
+            });
+        }
+        if (role === register_dto_1.Role.TUTOR) {
+            await this.prisma.tutorProfile.upsert({
+                where: { userId },
+                update: {},
+                create: {
+                    userId,
+                    bio: '',
+                },
+            });
+        }
+    }
     async logAttempt(userId, success) {
         if (userId) {
             await this.prisma.loginAttempt.create({
@@ -114,7 +165,7 @@ let AuthService = class AuthService {
             take: 5,
         });
         const lastFive = recentAttempts.slice(0, 5);
-        return lastFive.length === 5 && lastFive.every(a => !a.success);
+        return lastFive.length === 5 && lastFive.every((a) => !a.success);
     }
 };
 exports.AuthService = AuthService;

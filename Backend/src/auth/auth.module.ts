@@ -5,20 +5,21 @@ import { PrismaService } from '../prisma/prisma.service';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { GoogleStrategy } from './google.strategy';
 
 @Module({
   imports: [
-    ConfigModule, // Asegurarse que ConfigModule esté disponible
+    ConfigModule,
     JwtModule.registerAsync({
-      imports: [ConfigModule], // Importar ConfigModule aquí también
+      imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'supersecret', // Usar ConfigService
+        secret: configService.get<string>('JWT_SECRET') || 'supersecret',
         signOptions: { expiresIn: '1d' },
       }),
-      inject: [ConfigService], // Inyectar ConfigService
+      inject: [ConfigService],
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, PrismaService, JwtStrategy],
+  providers: [AuthService, PrismaService, JwtStrategy, GoogleStrategy], // 👈 AÑADIDO
 })
 export class AuthModule {}

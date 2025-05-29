@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto, Role } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -95,6 +100,68 @@ export class AuthService {
     return { user: safeUser, access_token: token };
   }
 
+  async loginWithGoogle(googleUser: any): Promise<{ token: string; isNewUser: boolean; user: any }> {
+    const { email, name } = googleUser;
+  
+    let user = await this.prisma.user.findUnique({ where: { email } });
+    const isNewUser = !user;
+  
+    if (isNewUser) {
+      user = await this.prisma.user.create({
+        data: {
+          email,
+          full_name: name,
+          role: 'STUDENT',
+        },
+      });
+    }
+  
+    if (!user) {
+      throw new Error('No se pudo crear o recuperar el usuario de Google');
+    }
+  
+    const token = this.jwt.sign({
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    });
+  
+    return { token, isNewUser, user };
+  }
+  
+  
+
+  async assignRole(userId: number, role: Role.STUDENT | Role.TUTOR) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { role },
+    });
+
+    if (role === Role.STUDENT) {
+      await this.prisma.studentProfile.upsert({
+        where: { userId },
+        update: {},
+        create: {
+          userId,
+          university: '',
+          career: '',
+          study_year: 0,
+        },
+      });
+    }
+
+    if (role === Role.TUTOR) {
+      await this.prisma.tutorProfile.upsert({
+        where: { userId },
+        update: {},
+        create: {
+          userId,
+          bio: '',
+        },
+      });
+    }
+  }
+
   private async logAttempt(userId: number | null, success: boolean) {
     if (userId) {
       await this.prisma.loginAttempt.create({
@@ -123,6 +190,6 @@ export class AuthService {
     });
 
     const lastFive = recentAttempts.slice(0, 5);
-    return lastFive.length === 5 && lastFive.every(a => !a.success);
+    return lastFive.length === 5 && lastFive.every((a) => !a.success);
   }
 }
