@@ -12,6 +12,7 @@ declare class CourseInterestViewDto {
     courseName: string;
 }
 declare class StudentProfileViewDto {
+    id?: number;
     university: string;
     career: string;
     study_year: number;
