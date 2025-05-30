@@ -25,7 +25,7 @@ class CourseInterestViewDto {
 }
 
 class StudentProfileViewDto {
-  // @ApiPropertyOptional() id?: number; // Si decides exponer el ID del StudentProfile
+  @ApiPropertyOptional() id?: number; // Si decides exponer el ID del StudentProfile
   @ApiProperty()
   university: string;
   @ApiProperty()

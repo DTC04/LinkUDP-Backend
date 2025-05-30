@@ -57,12 +57,17 @@ __decorate([
     __metadata("design:type", String)
 ], CourseInterestViewDto.prototype, "courseName", void 0);
 class StudentProfileViewDto {
+    id;
     university;
     career;
     study_year;
     bio;
     interests;
 }
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    __metadata("design:type", Number)
+], StudentProfileViewDto.prototype, "id", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)

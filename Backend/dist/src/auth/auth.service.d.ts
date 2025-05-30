@@ -1,5 +1,5 @@
 import { PrismaService } from '../prisma/prisma.service';
-import { RegisterDto } from './dto/register.dto';
+import { RegisterDto, Role } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 export declare class AuthService {
@@ -36,6 +36,12 @@ export declare class AuthService {
         };
         access_token: string;
     }>;
+    loginWithGoogle(googleUser: any): Promise<{
+        token: string;
+        isNewUser: boolean;
+        user: any;
+    }>;
+    assignRole(userId: number, role: Role.STUDENT | Role.TUTOR): Promise<void>;
     private logAttempt;
     private isUserTemporarilyBlocked;
 }

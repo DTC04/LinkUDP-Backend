@@ -1,6 +1,6 @@
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
-import { RegisterDto } from './dto/register.dto';
+import { RegisterDto, Role } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 export declare class AuthController {
     private readonly authService;
@@ -38,4 +38,16 @@ export declare class AuthController {
     logout(res: Response): Promise<{
         message: string;
     }>;
+    googleAuth(): Promise<void>;
+    googleRedirect(req: Request & {
+        user?: any;
+    }, res: Response): Promise<void>;
+    assignRole(body: {
+        role: Role;
+        userId: number;
+    }, res: Response): Promise<{
+        message: string;
+        redirectTo: string;
+    }>;
+    getMe(user: any): any;
 }

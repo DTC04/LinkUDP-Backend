@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BookingsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const client_1 = require("@prisma/client");
 let BookingsService = class BookingsService {
     prisma;
     constructor(prisma) {
@@ -63,6 +64,111 @@ let BookingsService = class BookingsService {
                     start_time: upcoming ? 'asc' : 'desc',
                 },
             },
+        });
+    }
+    async createBooking(studentUserId, sessionId) {
+        return this.prisma.$transaction(async (tx) => {
+            const studentProfile = await tx.studentProfile.findUnique({
+                where: { userId: studentUserId },
+                select: { id: true },
+            });
+            if (!studentProfile) {
+                throw new common_1.NotFoundException('Perfil de estudiante no encontrado para el usuario autenticado.');
+            }
+            const tutoringSession = await tx.tutoringSession.findUnique({
+                where: { id: sessionId },
+                select: {
+                    id: true,
+                    status: true,
+                    tutorId: true,
+                    start_time: true,
+                    end_time: true,
+                },
+            });
+            if (!tutoringSession) {
+                throw new common_1.NotFoundException('Sesión de tutoría no encontrada.');
+            }
+            if (tutoringSession.status !== client_1.BookingStatus.AVAILABLE) {
+                throw new common_1.ConflictException('Esta sesión de tutoría ya no está disponible para reservar.');
+            }
+            const existingBookingForStudent = await tx.booking.findFirst({
+                where: {
+                    studentProfileId: studentProfile.id,
+                    sessionId: sessionId,
+                    status: {
+                        in: [client_1.BookingStatus.PENDING, client_1.BookingStatus.CONFIRMED],
+                    },
+                },
+            });
+            if (existingBookingForStudent) {
+                throw new common_1.ConflictException('Ya tienes una reserva para esta sesión.');
+            }
+            const overlappingBooking = await tx.booking.findFirst({
+                where: {
+                    studentProfileId: studentProfile.id,
+                    status: {
+                        in: [client_1.BookingStatus.PENDING, client_1.BookingStatus.CONFIRMED],
+                    },
+                    session: {
+                        OR: [
+                            {
+                                start_time: {
+                                    lt: tutoringSession.end_time,
+                                },
+                                end_time: {
+                                    gt: tutoringSession.start_time,
+                                },
+                            },
+                        ],
+                    },
+                },
+            });
+            if (overlappingBooking) {
+                throw new common_1.ConflictException('Ya tienes una tutoría agendada que se superpone con este horario.');
+            }
+            const booking = await tx.booking.create({
+                data: {
+                    sessionId: tutoringSession.id,
+                    studentProfileId: studentProfile.id,
+                    status: client_1.BookingStatus.PENDING,
+                },
+            });
+            await tx.tutoringSession.update({
+                where: { id: sessionId },
+                data: { status: client_1.BookingStatus.PENDING },
+            });
+            return booking;
+        });
+    }
+    async cancelBooking(bookingId, studentProfileId) {
+        return this.prisma.$transaction(async (tx) => {
+            const booking = await tx.booking.findUnique({
+                where: { id: bookingId },
+                include: { session: true },
+            });
+            if (!booking) {
+                throw new common_1.NotFoundException('Reserva no encontrada.');
+            }
+            if (booking.studentProfileId !== studentProfileId) {
+                throw new common_1.ForbiddenException('No tienes permiso para cancelar esta reserva.');
+            }
+            if (booking.status === client_1.BookingStatus.CANCELLED) {
+                throw new common_1.ConflictException('Esta reserva ya ha sido cancelada.');
+            }
+            const now = new Date();
+            if (booking.session.start_time < now) {
+                throw new common_1.BadRequestException('No se puede cancelar una tutoría que ya ha comenzado o terminado.');
+            }
+            await tx.booking.update({
+                where: { id: bookingId },
+                data: { status: client_1.BookingStatus.CANCELLED },
+            });
+            if (booking.session.status === client_1.BookingStatus.PENDING) {
+                await tx.tutoringSession.update({
+                    where: { id: booking.sessionId },
+                    data: { status: client_1.BookingStatus.AVAILABLE },
+                });
+            }
         });
     }
 };

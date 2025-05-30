@@ -27,6 +27,33 @@ let BookingsController = class BookingsController {
         this.bookingsService = bookingsService;
         this.prisma = prisma;
     }
+    async cancelBooking(user, bookingId) {
+        if (!user || !user.id) {
+            throw new common_1.UnauthorizedException('Usuario no autenticado.');
+        }
+        const studentProfile = await this.prisma.studentProfile.findUnique({
+            where: { userId: user.id },
+            select: { id: true },
+        });
+        if (!studentProfile) {
+            throw new common_1.NotFoundException('Perfil de estudiante no encontrado para el usuario autenticado.');
+        }
+        const parsedBookingId = parseInt(bookingId, 10);
+        if (isNaN(parsedBookingId)) {
+            throw new common_1.BadRequestException('ID de reserva inválido.');
+        }
+        await this.bookingsService.cancelBooking(parsedBookingId, studentProfile.id);
+    }
+    async bookTutoringSession(user, sessionId) {
+        if (user.role !== 'STUDENT' && user.role !== 'BOTH') {
+            throw new common_1.BadRequestException('Solo los estudiantes pueden agendar tutorías.');
+        }
+        const sessionIdNum = parseInt(sessionId, 10);
+        if (isNaN(sessionIdNum)) {
+            throw new common_1.BadRequestException('ID de sesión inválido.');
+        }
+        return this.bookingsService.createBooking(user.id, sessionIdNum);
+    }
     async getMyBookings(user, statuses, upcoming, past) {
         if (!user || !user.id) {
             throw new common_1.UnauthorizedException('Usuario no autenticado.');
@@ -43,14 +70,74 @@ let BookingsController = class BookingsController {
 };
 exports.BookingsController = BookingsController;
 __decorate([
+    (0, common_1.Patch)(':bookingId/cancel'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Cancelar una reserva existente para el estudiante autenticado',
+    }),
+    (0, swagger_1.ApiResponse)({ status: 204, description: 'Reserva cancelada exitosamente.' }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'No autorizado.' }),
+    (0, swagger_1.ApiResponse)({
+        status: 403,
+        description: 'Acceso denegado (el usuario no es el dueño de la reserva o no puede cancelarla en este estado).',
+    }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Reserva no encontrada.' }),
+    __param(0, (0, get_user_decorator_1.GetUser)()),
+    __param(1, (0, common_1.Param)('bookingId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], BookingsController.prototype, "cancelBooking", null);
+__decorate([
+    (0, common_1.Post)(':sessionId/book'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
+    (0, swagger_1.ApiResponse)({
+        status: 201,
+        description: 'La tutoría ha sido agendada con éxito.',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 404,
+        description: 'Sesión de tutoría no encontrada o perfil de estudiante no encontrado.',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 409,
+        description: 'La sesión de tutoría ya no está disponible o el estudiante ya tiene una reserva para esta sesión/superpuesta.',
+    }),
+    __param(0, (0, get_user_decorator_1.GetUser)()),
+    __param(1, (0, common_1.Param)('sessionId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], BookingsController.prototype, "bookTutoringSession", null);
+__decorate([
     (0, common_1.Get)('me'),
-    (0, swagger_1.ApiOperation)({ summary: "Obtener las reservas del estudiante autenticado" }),
-    (0, swagger_1.ApiQuery)({ name: 'status', required: false, description: 'Filtrar por estado de reserva (PENDING, CONFIRMED, CANCELLED, COMPLETED). Puede ser un string o un array.', type: String, isArray: true, enum: client_1.BookingStatus }),
-    (0, swagger_1.ApiQuery)({ name: 'upcoming', required: false, description: 'Filtrar solo reservas futuras.', type: Boolean }),
-    (0, swagger_1.ApiQuery)({ name: 'past', required: false, description: 'Filtrar solo reservas pasadas.', type: Boolean }),
+    (0, swagger_1.ApiOperation)({ summary: 'Obtener las reservas del estudiante autenticado' }),
+    (0, swagger_1.ApiQuery)({
+        name: 'status',
+        required: false,
+        description: 'Filtrar por estado de reserva (PENDING, CONFIRMED, CANCELLED, COMPLETED). Puede ser un string o un array.',
+        type: String,
+        isArray: true,
+        enum: client_1.BookingStatus,
+    }),
+    (0, swagger_1.ApiQuery)({
+        name: 'upcoming',
+        required: false,
+        description: 'Filtrar solo reservas futuras.',
+        type: Boolean,
+    }),
+    (0, swagger_1.ApiQuery)({
+        name: 'past',
+        required: false,
+        description: 'Filtrar solo reservas pasadas.',
+        type: Boolean,
+    }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Reservas obtenidas exitosamente.' }),
     (0, swagger_1.ApiResponse)({ status: 401, description: 'No autorizado.' }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: 'Perfil de estudiante no encontrado.' }),
+    (0, swagger_1.ApiResponse)({
+        status: 404,
+        description: 'Perfil de estudiante no encontrado.',
+    }),
     __param(0, (0, get_user_decorator_1.GetUser)()),
     __param(1, (0, common_1.Query)('status')),
     __param(2, (0, common_1.Query)('upcoming', new common_1.ParseBoolPipe({ optional: true }))),

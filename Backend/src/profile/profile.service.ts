@@ -81,7 +81,7 @@ export class ProfileService {
 
     if (user.studentProfile) {
       response.studentProfile = {
-        // id: user.studentProfile.id, // Si ViewUserProfileDto.StudentProfileViewDto tiene id
+        id: user.studentProfile.id, // Si ViewUserProfileDto.StudentProfileViewDto tiene id
         university: user.studentProfile.university,
         career: user.studentProfile.career,
         study_year: user.studentProfile.study_year,
@@ -490,9 +490,7 @@ export class ProfileService {
   async getPublicTutorProfileById(
     userId: number,
   ): Promise<ViewUserProfileDto | null> {
-    this.logger.debug(
-      `Fetching public tutor profile for userId: ${userId}`,
-    );
+    this.logger.debug(`Fetching public tutor profile for userId: ${userId}`);
     const user = await this.prisma.user.findUnique({
       where: {
         id: userId,
@@ -525,15 +523,16 @@ export class ProfileService {
     this.logger.debug(
       `Raw availability for tutorProfileId ${user.tutorProfile.id} (userId: ${userId}): ${JSON.stringify(user.tutorProfile.availability)}`,
     );
-    
+
     // Double check role, although presence of tutorProfile should imply TUTOR or BOTH
     if (user.role !== Role.TUTOR && user.role !== Role.BOTH) {
-        this.logger.warn(`User ${userId} has a tutor profile but an inconsistent role: ${user.role}`);
-        // Depending on business logic, you might still return the profile or treat as not found.
-        // For now, let's treat as not found if role is not TUTOR/BOTH.
-        return null;
+      this.logger.warn(
+        `User ${userId} has a tutor profile but an inconsistent role: ${user.role}`,
+      );
+      // Depending on business logic, you might still return the profile or treat as not found.
+      // For now, let's treat as not found if role is not TUTOR/BOTH.
+      return null;
     }
-
 
     const response: ViewUserProfileDto = {
       user: {

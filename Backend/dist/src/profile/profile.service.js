@@ -68,6 +68,7 @@ let ProfileService = ProfileService_1 = class ProfileService {
         };
         if (user.studentProfile) {
             response.studentProfile = {
+                id: user.studentProfile.id,
                 university: user.studentProfile.university,
                 career: user.studentProfile.career,
                 study_year: user.studentProfile.study_year,
