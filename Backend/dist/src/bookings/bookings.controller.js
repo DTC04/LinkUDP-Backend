@@ -31,18 +31,29 @@ let BookingsController = class BookingsController {
         if (!user || !user.id) {
             throw new common_1.UnauthorizedException('Usuario no autenticado.');
         }
-        const studentProfile = await this.prisma.studentProfile.findUnique({
-            where: { userId: user.id },
-            select: { id: true },
-        });
-        if (!studentProfile) {
-            throw new common_1.NotFoundException('Perfil de estudiante no encontrado para el usuario autenticado.');
-        }
         const parsedBookingId = parseInt(bookingId, 10);
         if (isNaN(parsedBookingId)) {
             throw new common_1.BadRequestException('ID de reserva inválido.');
         }
-        await this.bookingsService.cancelBooking(parsedBookingId, studentProfile.id);
+        const [studentProfile, tutorProfile] = await Promise.all([
+            this.prisma.studentProfile.findUnique({
+                where: { userId: user.id },
+                select: { id: true },
+            }),
+            this.prisma.tutorProfile.findUnique({
+                where: { userId: user.id },
+                select: { id: true },
+            }),
+        ]);
+        if (studentProfile) {
+            await this.bookingsService.cancelBooking(parsedBookingId, studentProfile.id, 'student');
+            return;
+        }
+        if (tutorProfile) {
+            await this.bookingsService.cancelBooking(parsedBookingId, tutorProfile.id, 'tutor');
+            return;
+        }
+        throw new common_1.NotFoundException('No se encontró un perfil de estudiante o tutor para el usuario autenticado.');
     }
     async bookTutoringSession(user, sessionId) {
         if (user.role !== 'STUDENT' && user.role !== 'BOTH') {
@@ -66,6 +77,43 @@ let BookingsController = class BookingsController {
             throw new common_1.NotFoundException('Perfil de estudiante no encontrado para el usuario autenticado.');
         }
         return this.bookingsService.findStudentBookings(studentProfile.id, statuses, upcoming, past);
+    }
+    async confirmBooking(id, req) {
+        const tutorUserId = req.user.id;
+        const tutorProfile = await this.prisma.tutorProfile.findUnique({
+            where: { userId: tutorUserId },
+            select: { id: true },
+        });
+        if (!tutorProfile) {
+            throw new common_1.NotFoundException('Perfil de tutor no encontrado para el usuario autenticado.');
+        }
+        const bookingId = Number(id);
+        if (isNaN(bookingId)) {
+            throw new common_1.BadRequestException('ID de reserva inválido.');
+        }
+        await this.bookingsService.confirmBooking(bookingId, tutorProfile.id);
+        return { message: 'Reserva confirmada' };
+    }
+    async confirmBookingBySession(sessionId, user) {
+        const tutorProfile = await this.prisma.tutorProfile.findUnique({
+            where: { userId: user.id },
+            select: { id: true },
+        });
+        if (!tutorProfile) {
+            throw new common_1.NotFoundException('Perfil de tutor no encontrado.');
+        }
+        await this.bookingsService.confirmBookingBySession(Number(sessionId), tutorProfile.id);
+        return { message: 'Reserva confirmada' };
+    }
+    async cancelBookingBySession(sessionId, user) {
+        const tutorProfile = await this.prisma.tutorProfile.findUnique({
+            where: { userId: user.id },
+            select: { id: true },
+        });
+        if (!tutorProfile) {
+            throw new common_1.NotFoundException('Perfil de tutor no encontrado.');
+        }
+        await this.bookingsService.cancelBookingBySession(Number(sessionId), tutorProfile.id, 'tutor');
     }
 };
 exports.BookingsController = BookingsController;
@@ -146,6 +194,40 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object, Boolean, Boolean]),
     __metadata("design:returntype", Promise)
 ], BookingsController.prototype, "getMyBookings", null);
+__decorate([
+    (0, common_1.Patch)(':id/confirm'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Confirmar una reserva existente para el tutor autenticado',
+    }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Reserva confirmada exitosamente.' }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'No autorizado.' }),
+    (0, swagger_1.ApiResponse)({
+        status: 404,
+        description: 'Reserva no encontrada.',
+    }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], BookingsController.prototype, "confirmBooking", null);
+__decorate([
+    (0, common_1.Patch)('/session/:sessionId/confirm'),
+    __param(0, (0, common_1.Param)('sessionId')),
+    __param(1, (0, get_user_decorator_1.GetUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], BookingsController.prototype, "confirmBookingBySession", null);
+__decorate([
+    (0, common_1.Patch)('/session/:sessionId/cancel'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
+    __param(0, (0, common_1.Param)('sessionId')),
+    __param(1, (0, get_user_decorator_1.GetUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], BookingsController.prototype, "cancelBookingBySession", null);
 exports.BookingsController = BookingsController = __decorate([
     (0, swagger_1.ApiTags)('bookings'),
     (0, swagger_1.ApiBearerAuth)(),
