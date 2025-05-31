@@ -23,20 +23,24 @@ let JwtStrategy = JwtStrategy_1 = class JwtStrategy extends (0, passport_1.Passp
     constructor(prisma, configService) {
         super({
             jwtFromRequest: passport_jwt_1.ExtractJwt.fromExtractors([
+                passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
                 (req) => {
                     try {
                         const raw = req?.cookies?.['access_token'];
-                        if (!raw)
+                        if (!raw) {
                             return null;
+                        }
+                        this.logger.debug(`Found access_token cookie: ${raw}`);
                         if (typeof raw === 'string' && raw.startsWith('j:')) {
                             const decoded = decodeURIComponent(raw.slice(2));
                             const parsed = JSON.parse(decoded);
+                            this.logger.debug(`Parsed serialized cookie to: ${parsed.access_token}`);
                             return parsed.access_token;
                         }
                         return raw;
                     }
                     catch (e) {
-                        console.warn('Error parsing access_token cookie:', e);
+                        this.logger.warn('Error parsing access_token cookie:', e);
                         return null;
                     }
                 },

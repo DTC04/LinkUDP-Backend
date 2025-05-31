@@ -59,7 +59,7 @@ let TutoriasService = class TutoriasService {
             }
         }
         else if (!tutorId) {
-            where.status = 'AVAILABLE';
+            where.status = { in: ['AVAILABLE', 'PENDING'] };
         }
         if (ramo) {
             where.course = {
