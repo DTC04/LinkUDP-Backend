@@ -21,28 +21,36 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
+        // 1. Try to get token from Authorization header
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+        // 2. Fallback to cookie
         (req) => {
           try {
             const raw = req?.cookies?.['access_token'];
-            if (!raw) return null;
+            if (!raw) {
+              // this.logger.debug('No access_token cookie found');
+              return null;
+            }
+            this.logger.debug(`Found access_token cookie: ${raw}`);
 
             // Si es una cookie serializada tipo j:{...}
             if (typeof raw === 'string' && raw.startsWith('j:')) {
               const decoded = decodeURIComponent(raw.slice(2));
               const parsed = JSON.parse(decoded);
+              this.logger.debug(`Parsed serialized cookie to: ${parsed.access_token}`);
               return parsed.access_token;
             }
 
             // Si ya es el JWT plano
             return raw;
           } catch (e) {
-            console.warn('Error parsing access_token cookie:', e);
+            this.logger.warn('Error parsing access_token cookie:', e);
             return null;
           }
         },
       ]),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_SECRET') || 'supersecret',
+      secretOrKey: configService.get<string>('JWT_SECRET') || 'supersecret', // Ensure this matches your signing secret
     });
 
     this.logger.log(
