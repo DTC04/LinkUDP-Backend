@@ -60,7 +60,9 @@ export class TutoriasService {
         where.status = status as BookingStatus;
       }
     } else if (!tutorId) {
-      where.status = 'AVAILABLE';
+      // For public view, show available and pending (booked) tutorials
+      // The frontend will need to handle displaying these statuses appropriately (e.g., disable booking for PENDING)
+      where.status = { in: ['AVAILABLE', 'PENDING'] };
     }
 
 
