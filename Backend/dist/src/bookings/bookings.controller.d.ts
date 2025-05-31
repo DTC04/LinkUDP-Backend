@@ -9,15 +9,22 @@ export declare class BookingsController {
     bookTutoringSession(user: User, sessionId: string): Promise<{
         id: number;
         created_at: Date;
-        status: import(".prisma/client").$Enums.BookingStatus;
-        studentProfileId: number;
         sessionId: number;
+        studentProfileId: number;
+        status: import(".prisma/client").$Enums.BookingStatus;
     }>;
     getMyBookings(user: UserModel, statuses?: BookingStatus | BookingStatus[], upcoming?: boolean, past?: boolean): Promise<{
         id: number;
         created_at: Date;
-        status: import(".prisma/client").$Enums.BookingStatus;
-        studentProfileId: number;
         sessionId: number;
+        studentProfileId: number;
+        status: import(".prisma/client").$Enums.BookingStatus;
     }[]>;
+    confirmBooking(id: string, req: any): Promise<{
+        message: string;
+    }>;
+    confirmBookingBySession(sessionId: string, user: UserModel): Promise<{
+        message: string;
+    }>;
+    cancelBookingBySession(sessionId: string, user: UserModel): Promise<void>;
 }

@@ -175,65 +175,122 @@ export class BookingsService {
 
   async cancelBooking(
     bookingId: number,
-    studentProfileId: number,
+    profileId: number,
+    profileType: 'student' | 'tutor',
   ): Promise<void> {
     return this.prisma.$transaction(async (tx) => {
       const booking = await tx.booking.findUnique({
         where: { id: bookingId },
-        include: { session: true }, // Incluir la sesión para poder actualizar su estado
+        include: { session: true },
       });
 
       if (!booking) {
         throw new NotFoundException('Reserva no encontrada.');
       }
 
-      //  Verificar que el estudiante que intenta cancelar sea el dueño de la reserva
-      if (booking.studentProfileId !== studentProfileId) {
-        throw new ForbiddenException(
-          'No tienes permiso para cancelar esta reserva.',
-        );
+      // Verifica permisos
+      if (
+        (profileType === 'student' && booking.studentProfileId !== profileId) ||
+        (profileType === 'tutor' && booking.session.tutorId !== profileId)
+      ) {
+        throw new ForbiddenException('No tienes permiso para cancelar esta reserva.');
       }
 
-      //  Verificar que la reserva esté en un estado cancelable
-      // Solo se pueden cancelar si están PENDING o CONFIRMED y no si ya pasó la fecha.
       if (booking.status === BookingStatus.CANCELLED) {
         throw new ConflictException('Esta reserva ya ha sido cancelada.');
       }
-      // if (booking.status === BookingStatus.COMPLETED) {
-      //   throw new ConflictException(
-      //     'Esta reserva ya ha sido completada y no se puede cancelar.',
-      //   );
-      // }
 
-      // Opcional: Se puede añadir una regla para no cancelar si la sesión es muy pronto (ej. menos de 1 hora antes)
       const now = new Date();
       if (booking.session.start_time < now) {
-        throw new BadRequestException(
-          'No se puede cancelar una tutoría que ya ha comenzado o terminado.',
-        );
+        throw new BadRequestException('No se puede cancelar una tutoría que ya ha comenzado o terminado.');
       }
-      // O si quieres una política de cancelación con tiempo límite:
-      // const cancellationCutoff = new Date(booking.session.start_time.getTime() - (60 * 60 * 1000)); // 1 hora antes
-      // if (now > cancellationCutoff) {
-      //    throw new BadRequestException('No se puede cancelar la tutoría con menos de 1 hora de antelación.');
-      // }
 
-      //  Actualizar el estado de la reserva a CANCELLED
+      // Cancela el booking
       await tx.booking.update({
         where: { id: bookingId },
         data: { status: BookingStatus.CANCELLED },
       });
 
-      // Actualizar el estado de la TutoringSession (como es un cupo único)
-      // Si la sesión de tutoría estaba en PENDING (por ser reservada por esta única persona)
-      // y ahora esta reserva se cancela, la sesión vuelve a estar AVAILABLE.
-      // Esta lógica es crucial para el modelo de un solo cupo.
-      if (booking.session.status === BookingStatus.PENDING) {
+      // Si la sesión estaba PENDING o CONFIRMED y cancela el estudiante, vuelve a AVAILABLE
+      if (
+        profileType === 'student' &&
+        (booking.session.status === BookingStatus.PENDING || booking.session.status === BookingStatus.CONFIRMED)
+      ) {
         await tx.tutoringSession.update({
           where: { id: booking.sessionId },
-          data: { status: BookingStatus.AVAILABLE }, // La sesión vuelve a estar disponible
+          data: { status: BookingStatus.AVAILABLE },
+        });
+      }
+      // Si cancela el tutor y la sesión estaba PENDING, también vuelve a AVAILABLE
+      else if (
+        profileType === 'tutor' &&
+        booking.session.status === BookingStatus.PENDING
+      ) {
+        await tx.tutoringSession.update({
+          where: { id: booking.sessionId },
+          data: { status: BookingStatus.AVAILABLE },
         });
       }
     });
+  }
+
+  async confirmBooking(bookingId: number, tutorProfileId: number): Promise<void> {
+    return this.prisma.$transaction(async (tx) => {
+      const booking = await tx.booking.findUnique({
+        where: { id: bookingId },
+        include: { session: true },
+      });
+
+      if (!booking) {
+        throw new NotFoundException('Reserva no encontrada.');
+      }
+
+      // Verifica que el perfil de tutor autenticado sea el tutor de la sesión
+      if (booking.session.tutorId !== tutorProfileId) {
+        throw new ForbiddenException('No tienes permiso para confirmar esta reserva.');
+      }
+
+      if (booking.status !== BookingStatus.PENDING) {
+        throw new ConflictException('Solo puedes confirmar reservas pendientes.');
+      }
+
+      // Actualiza el estado del booking
+      await tx.booking.update({
+        where: { id: bookingId },
+        data: { status: BookingStatus.CONFIRMED },
+      });
+
+      // Opcional: actualizar el estado de la sesión si lo necesitas
+      await tx.tutoringSession.update({
+        where: { id: booking.sessionId },
+        data: { status: BookingStatus.CONFIRMED },
+      });
+    });
+  }
+
+  async confirmBookingBySession(sessionId: number, tutorProfileId: number): Promise<void> {
+    const booking = await this.prisma.booking.findFirst({
+      where: {
+        sessionId,
+        status: BookingStatus.PENDING,
+        session: { tutorId: tutorProfileId },
+      },
+      include: { session: true },
+    });
+    if (!booking) throw new NotFoundException('No hay solicitud pendiente para esta tutoría.');
+    await this.confirmBooking(booking.id, tutorProfileId);
+  }
+
+  async cancelBookingBySession(sessionId: number, tutorProfileId: number, profileType: 'student' | 'tutor'): Promise<void> {
+    const booking = await this.prisma.booking.findFirst({
+      where: {
+        sessionId,
+        status: BookingStatus.PENDING,
+        session: { tutorId: tutorProfileId },
+      },
+      include: { session: true },
+    });
+    if (!booking) throw new NotFoundException('No hay solicitud pendiente para esta tutoría.');
+    await this.cancelBooking(booking.id, tutorProfileId, profileType);
   }
 }

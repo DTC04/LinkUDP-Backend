@@ -140,7 +140,7 @@ let BookingsService = class BookingsService {
             return booking;
         });
     }
-    async cancelBooking(bookingId, studentProfileId) {
+    async cancelBooking(bookingId, profileId, profileType) {
         return this.prisma.$transaction(async (tx) => {
             const booking = await tx.booking.findUnique({
                 where: { id: bookingId },
@@ -149,7 +149,8 @@ let BookingsService = class BookingsService {
             if (!booking) {
                 throw new common_1.NotFoundException('Reserva no encontrada.');
             }
-            if (booking.studentProfileId !== studentProfileId) {
+            if ((profileType === 'student' && booking.studentProfileId !== profileId) ||
+                (profileType === 'tutor' && booking.session.tutorId !== profileId)) {
                 throw new common_1.ForbiddenException('No tienes permiso para cancelar esta reserva.');
             }
             if (booking.status === client_1.BookingStatus.CANCELLED) {
@@ -163,13 +164,72 @@ let BookingsService = class BookingsService {
                 where: { id: bookingId },
                 data: { status: client_1.BookingStatus.CANCELLED },
             });
-            if (booking.session.status === client_1.BookingStatus.PENDING) {
+            if (profileType === 'student' &&
+                (booking.session.status === client_1.BookingStatus.PENDING || booking.session.status === client_1.BookingStatus.CONFIRMED)) {
+                await tx.tutoringSession.update({
+                    where: { id: booking.sessionId },
+                    data: { status: client_1.BookingStatus.AVAILABLE },
+                });
+            }
+            else if (profileType === 'tutor' &&
+                booking.session.status === client_1.BookingStatus.PENDING) {
                 await tx.tutoringSession.update({
                     where: { id: booking.sessionId },
                     data: { status: client_1.BookingStatus.AVAILABLE },
                 });
             }
         });
+    }
+    async confirmBooking(bookingId, tutorProfileId) {
+        return this.prisma.$transaction(async (tx) => {
+            const booking = await tx.booking.findUnique({
+                where: { id: bookingId },
+                include: { session: true },
+            });
+            if (!booking) {
+                throw new common_1.NotFoundException('Reserva no encontrada.');
+            }
+            if (booking.session.tutorId !== tutorProfileId) {
+                throw new common_1.ForbiddenException('No tienes permiso para confirmar esta reserva.');
+            }
+            if (booking.status !== client_1.BookingStatus.PENDING) {
+                throw new common_1.ConflictException('Solo puedes confirmar reservas pendientes.');
+            }
+            await tx.booking.update({
+                where: { id: bookingId },
+                data: { status: client_1.BookingStatus.CONFIRMED },
+            });
+            await tx.tutoringSession.update({
+                where: { id: booking.sessionId },
+                data: { status: client_1.BookingStatus.CONFIRMED },
+            });
+        });
+    }
+    async confirmBookingBySession(sessionId, tutorProfileId) {
+        const booking = await this.prisma.booking.findFirst({
+            where: {
+                sessionId,
+                status: client_1.BookingStatus.PENDING,
+                session: { tutorId: tutorProfileId },
+            },
+            include: { session: true },
+        });
+        if (!booking)
+            throw new common_1.NotFoundException('No hay solicitud pendiente para esta tutoría.');
+        await this.confirmBooking(booking.id, tutorProfileId);
+    }
+    async cancelBookingBySession(sessionId, tutorProfileId, profileType) {
+        const booking = await this.prisma.booking.findFirst({
+            where: {
+                sessionId,
+                status: client_1.BookingStatus.PENDING,
+                session: { tutorId: tutorProfileId },
+            },
+            include: { session: true },
+        });
+        if (!booking)
+            throw new common_1.NotFoundException('No hay solicitud pendiente para esta tutoría.');
+        await this.cancelBooking(booking.id, tutorProfileId, profileType);
     }
 };
 exports.BookingsService = BookingsService;

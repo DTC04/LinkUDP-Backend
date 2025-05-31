@@ -12,6 +12,7 @@ import {
   Post,
   HttpStatus,
   Patch,
+  Req,
 } from '@nestjs/common';
 import { BookingsService } from './bookings.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -57,26 +58,32 @@ export class BookingsController {
       throw new UnauthorizedException('Usuario no autenticado.');
     }
 
-    const studentProfile = await this.prisma.studentProfile.findUnique({
-      where: { userId: user.id },
-      select: { id: true },
-    });
-
-    if (!studentProfile) {
-      throw new NotFoundException(
-        'Perfil de estudiante no encontrado para el usuario autenticado.',
-      );
-    }
-
     const parsedBookingId = parseInt(bookingId, 10);
     if (isNaN(parsedBookingId)) {
       throw new BadRequestException('ID de reserva inválido.');
     }
 
-    await this.bookingsService.cancelBooking(
-      parsedBookingId,
-      studentProfile.id,
-    );
+    // Buscar ambos perfiles
+    const [studentProfile, tutorProfile] = await Promise.all([
+      this.prisma.studentProfile.findUnique({
+        where: { userId: user.id },
+        select: { id: true },
+      }),
+      this.prisma.tutorProfile.findUnique({
+        where: { userId: user.id },
+        select: { id: true },
+      }),
+    ]);
+
+    if (studentProfile) {
+      await this.bookingsService.cancelBooking(parsedBookingId, studentProfile.id, 'student');
+      return;
+    }
+    if (tutorProfile) {
+      await this.bookingsService.cancelBooking(parsedBookingId, tutorProfile.id, 'tutor');
+      return;
+    }
+    throw new NotFoundException('No se encontró un perfil de estudiante o tutor para el usuario autenticado.');
   }
 
   @Post(':sessionId/book')
@@ -170,5 +177,68 @@ export class BookingsController {
       upcoming,
       past,
     );
+  }
+
+  @Patch(':id/confirm')
+  @ApiOperation({
+    summary: 'Confirmar una reserva existente para el tutor autenticado',
+  })
+  @ApiResponse({ status: 200, description: 'Reserva confirmada exitosamente.' })
+  @ApiResponse({ status: 401, description: 'No autorizado.' })
+  @ApiResponse({
+    status: 404,
+    description: 'Reserva no encontrada.',
+  })
+  async confirmBooking(
+    @Param('id') id: string,
+    @Req() req: any,
+  ) {
+    const tutorUserId = req.user.id;
+    // Buscar el perfil de tutor correspondiente al usuario autenticado
+    const tutorProfile = await this.prisma.tutorProfile.findUnique({
+      where: { userId: tutorUserId },
+      select: { id: true },
+    });
+    if (!tutorProfile) {
+      throw new NotFoundException('Perfil de tutor no encontrado para el usuario autenticado.');
+    }
+    const bookingId = Number(id);
+    if (isNaN(bookingId)) {
+      throw new BadRequestException('ID de reserva inválido.');
+    }
+    await this.bookingsService.confirmBooking(bookingId, tutorProfile.id);
+    return { message: 'Reserva confirmada' };
+  }
+
+  @Patch('/session/:sessionId/confirm')
+  async confirmBookingBySession(
+    @Param('sessionId') sessionId: string,
+    @GetUser() user: UserModel,
+  ) {
+    const tutorProfile = await this.prisma.tutorProfile.findUnique({
+      where: { userId: user.id },
+      select: { id: true },
+    });
+    if (!tutorProfile) {
+      throw new NotFoundException('Perfil de tutor no encontrado.');
+    }
+    await this.bookingsService.confirmBookingBySession(Number(sessionId), tutorProfile.id);
+    return { message: 'Reserva confirmada' };
+  }
+
+  @Patch('/session/:sessionId/cancel')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async cancelBookingBySession(
+    @Param('sessionId') sessionId: string,
+    @GetUser() user: UserModel,
+  ) {
+    const tutorProfile = await this.prisma.tutorProfile.findUnique({
+      where: { userId: user.id },
+      select: { id: true },
+    });
+    if (!tutorProfile) {
+      throw new NotFoundException('Perfil de tutor no encontrado.');
+    }
+    await this.bookingsService.cancelBookingBySession(Number(sessionId), tutorProfile.id, 'tutor');
   }
 }
