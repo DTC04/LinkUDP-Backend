@@ -1,12 +1,4 @@
-import { MailerService } from '@nestjs-modules/mailer';
-@Injectable()
-export class BookingService {
-  constructor(
-    private readonly mailerService: MailerService,
-    private readonly prisma: PrismaService,
-  ) { }
 
-}
 import {
   BadRequestException,
   ConflictException,
@@ -16,7 +8,15 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Booking, Prisma, BookingStatus } from '@prisma/client';
+import { MailerService } from '@nestjs-modules/mailer';
+@Injectable()
+export class BookingService {
+  constructor(
+    private readonly mailerService: MailerService,
+    private readonly prisma: PrismaService,
+  ) { }
 
+}
 @Injectable()
 export class BookingsService {
   constructor(private prisma: PrismaService, private mailerService: MailerService,) { }
