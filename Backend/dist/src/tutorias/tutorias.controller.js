@@ -18,6 +18,7 @@ const tutorias_service_1 = require("./tutorias.service");
 const create_tutoria_dto_1 = require("./dto/create-tutoria.dto");
 const update_tutoria_dto_1 = require("./dto/update-tutoria.dto");
 const swagger_1 = require("@nestjs/swagger");
+const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 let TutoriasController = class TutoriasController {
     tutoriasService;
     constructor(tutoriasService) {
@@ -34,8 +35,6 @@ let TutoriasController = class TutoriasController {
     async findAll(ramo, horario, tutorId, status, upcoming, limit) {
         const isUpcoming = upcoming === 'true';
         const tutorias = await this.tutoriasService.findAll(ramo, horario, tutorId, status, isUpcoming, limit);
-        if (tutorias.length === 0 && ramo) {
-        }
         return tutorias;
     }
     async findOne(id) {
@@ -55,9 +54,12 @@ let TutoriasController = class TutoriasController {
 exports.TutoriasController = TutoriasController;
 __decorate([
     (0, common_1.Post)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
     (0, swagger_1.ApiOperation)({ summary: 'Crear una nueva tutoría' }),
     (0, swagger_1.ApiResponse)({ status: 201, description: 'La tutoría ha sido creada exitosamente.' }),
     (0, swagger_1.ApiResponse)({ status: 400, description: 'Datos de entrada inválidos.' }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'No autorizado.' }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_tutoria_dto_1.CreateTutoriaDto]),
@@ -95,9 +97,13 @@ __decorate([
 ], TutoriasController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(':id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
     (0, swagger_1.ApiOperation)({ summary: 'Actualizar una tutoría existente' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Tutoría actualizada exitosamente.' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'Tutoría no encontrada.' }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'No autorizado.' }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: 'Datos de entrada inválidos.' }),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -106,9 +112,12 @@ __decorate([
 ], TutoriasController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
     (0, swagger_1.ApiOperation)({ summary: 'Eliminar una tutoría existente' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Tutoría eliminada exitosamente.' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'Tutoría no encontrada.' }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'No autorizado.' }),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number]),
