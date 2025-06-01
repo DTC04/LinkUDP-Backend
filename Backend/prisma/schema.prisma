@@ -1,0 +1,247 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  TUTOR
+  BOTH
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  AVAILABLE // Nuevo estado para tutorías ofrecidas
+}
+
+enum DayOfWeek {
+  LUNES
+  MARTES
+  MIERCOLES
+  JUEVES
+  VIERNES
+  SABADO
+  DOMINGO
+}
+
+model User {
+  id                Int      @id @default(autoincrement())
+  full_name         String
+  email             String   @unique
+  password          String? // Mantenemos opcional por si hay OAuth
+  oauth_provider    String?
+  oauth_provider_id String?
+  role              Role // STUDENT, TUTOR, BOTH
+  photo_url         String?
+  email_verified    Boolean  @default(false)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  // Perfiles
+  studentProfile         StudentProfile?
+  tutorProfile           TutorProfile?
+  // Otros campos como LoginAttempts, UserActivity, Notifications ya existen...
+  LoginAttempt           LoginAttempt[]
+  BookingHistory         BookingHistory[] // Asumiendo que es el usuario quien realiza la acción
+  UserActivity           UserActivity[]
+  Notification           Notification[]
+  NotificationPreference NotificationPreference?
+
+  @@map("User") // Asegúrate que el nombre de la tabla sea consistente
+}
+
+model LoginAttempt {
+  id           Int      @id @default(autoincrement())
+  user         User     @relation(fields: [userId], references: [id])
+  userId       Int
+  success      Boolean
+  attempted_at DateTime @default(now())
+}
+
+model Course {
+  id           Int    @id @default(autoincrement())
+  name         String @unique
+  subject_area String
+
+  studentInterests StudentInterest[]
+  tutorCourses     TutorCourse[]
+  tutoringSessions TutoringSession[]
+}
+
+model StudentProfile {
+  id         Int     @id @default(autoincrement())
+  userId     Int     @unique
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade) // onDelete Cascade
+  university String
+  career     String
+  study_year Int
+  bio        String? // Ya existe, hacerlo opcional si no es mandatorio al crear
+
+  interests      StudentInterest[]
+  bookings       Booking[]
+  feedbacks      Feedback[] // Estudiante que da feedback
+  favoriteTutors FavoriteTutor[]
+
+  @@map("StudentProfile")
+}
+
+model TutorProfile {
+  id             Int    @id @default(autoincrement())
+  userId         Int    @unique
+  user           User   @relation(fields: [userId], references: [id], onDelete: Cascade) // onDelete Cascade
+  bio            String // Ya existe, podría ser la descripción general del tutor
+  average_rating Float  @default(0.0)
+
+  // Nuevos campos para la HU
+  cv_url                 String? // URL al CV (ej. LinkedIn, Google Drive) o ruta si se almacena localmente
+  experience_details     String? // Texto más extenso para la experiencia, podría ser Markdown
+  tutoring_contact_email String? // Email específico para tutorías, si es diferente al de la cuenta
+  tutoring_phone         String? // Teléfono específico para tutorías, opcional
+
+  // --- NUEVOS CAMPOS PARA INFORMACIÓN ACADÉMICA DEL TUTOR ---
+  university    String? // Nueva universidad del tutor
+  degree        String? // Nueva carrera/título del tutor
+  academic_year String? // Nuevo año de estudio/egreso del tutor (usamos String para flexibilidad: "1", "egresado", etc.)
+  // ---------------------------------------------------------
+
+  // Relaciones existentes
+  courses          TutorCourse[]
+  availability     AvailabilityBlock[]
+  tutoringSessions TutoringSession[]
+  favoritedBy      FavoriteTutor[]
+
+  @@map("TutorProfile")
+}
+
+model StudentInterest {
+  id               Int            @id @default(autoincrement())
+  studentProfileId Int
+  studentProfile   StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+  courseId         Int
+  course           Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([studentProfileId, courseId]) // Evitar intereses duplicados
+  @@map("StudentInterest")
+}
+
+model TutorCourse {
+  id       Int          @id @default(autoincrement())
+  tutor    TutorProfile @relation(fields: [tutorId], references: [id])
+  tutorId  Int
+  course   Course       @relation(fields: [courseId], references: [id])
+  courseId Int
+  level    String
+  grade    Float
+
+  @@unique([tutorId, courseId])
+}
+
+model AvailabilityBlock {
+  id          Int          @id @default(autoincrement())
+  tutor       TutorProfile @relation(fields: [tutorId], references: [id])
+  tutorId     Int
+  day_of_week DayOfWeek
+  start_time  DateTime
+  end_time    DateTime
+}
+
+model TutoringSession {
+  id          Int           @id @default(autoincrement())
+  tutor       TutorProfile  @relation(fields: [tutorId], references: [id])
+  tutorId     Int
+  course      Course        @relation(fields: [courseId], references: [id])
+  courseId    Int
+  title       String
+  description String
+  date        DateTime // Considerar si esto es necesario o se puede inferir de start_time
+  start_time  DateTime
+  end_time    DateTime
+  status      BookingStatus @default(AVAILABLE) // Estado de la tutoría
+  location    String? // Puede ser opcional si es online
+  notes       String? // Notas adicionales para la tutoría
+  created_at  DateTime      @default(now())
+  updated_at  DateTime      @updatedAt
+
+  bookings  Booking[]
+  feedbacks Feedback[]
+}
+
+model Booking {
+  id               Int             @id @default(autoincrement())
+  session          TutoringSession @relation(fields: [sessionId], references: [id])
+  sessionId        Int
+  studentProfile   StudentProfile  @relation(fields: [studentProfileId], references: [id])
+  studentProfileId Int
+  status           BookingStatus
+  created_at       DateTime        @default(now())
+
+  history BookingHistory[]
+}
+
+model BookingHistory {
+  id            Int      @id @default(autoincrement())
+  booking       Booking  @relation(fields: [bookingId], references: [id])
+  bookingId     Int
+  performed_by  User     @relation(fields: [performedById], references: [id])
+  performedById Int
+  action        String
+  timestamp     DateTime @default(now())
+}
+
+model Feedback {
+  id         Int             @id @default(autoincrement())
+  session    TutoringSession @relation(fields: [sessionId], references: [id])
+  sessionId  Int
+  author     StudentProfile  @relation(fields: [authorId], references: [id])
+  authorId   Int
+  rating     Int
+  comment    String?
+  is_public  Boolean         @default(true)
+  created_at DateTime        @default(now())
+}
+
+model FavoriteTutor {
+  id               Int            @id @default(autoincrement())
+  studentProfile   StudentProfile @relation(fields: [studentProfileId], references: [id])
+  studentProfileId Int
+  tutorProfile     TutorProfile   @relation(fields: [tutorProfileId], references: [id])
+  tutorProfileId   Int
+  created_at       DateTime       @default(now())
+}
+
+model UserActivity {
+  id            Int      @id @default(autoincrement())
+  user          User     @relation(fields: [userId], references: [id])
+  userId        Int
+  activity_type String
+  reference_id  Int?
+  metadata      Json?
+  created_at    DateTime @default(now())
+}
+
+model Notification {
+  id         Int       @id @default(autoincrement())
+  user       User      @relation(fields: [userId], references: [id])
+  userId     Int
+  type       String
+  payload    Json
+  read_at    DateTime?
+  created_at DateTime  @default(now())
+}
+
+model NotificationPreference {
+  id                    Int     @id @default(autoincrement())
+  user                  User    @relation(fields: [userId], references: [id])
+  userId                Int     @unique
+  email_on_booking      Boolean @default(true)
+  email_on_cancellation Boolean @default(true)
+  inapp_on_booking      Boolean @default(true)
+  push_on_booking       Boolean @default(true)
+  daily_summary         Boolean @default(false)
+}
