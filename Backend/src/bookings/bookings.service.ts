@@ -187,7 +187,7 @@ export class BookingsService {
         await this.mailerService.sendMail({
           to: studentUser.email,
           subject: 'Confirmación de reserva de tutoría',
-          text: `Hola ${studentUser.full_name}, tu reserva para la sesión de tutoría que comienza el ${tutoringSession.start_time.toLocaleString()} ha sido creada y está pendiente de confirmación.`,
+          text: `Hola ${studentUser.full_name}, tu reserva para la sesión de tutoría que comienza el ${tutoringSession.start_time.toLocaleString()} ha sido creada Exitosamente, Agradecemos tu preferencia.`,
         });
       }
 
