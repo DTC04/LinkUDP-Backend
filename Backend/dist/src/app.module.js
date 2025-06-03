@@ -18,6 +18,7 @@ const profile_module_1 = require("./profile/profile.module");
 const bookings_module_1 = require("./bookings/bookings.module");
 const courses_module_1 = require("./courses/courses.module");
 const availability_module_1 = require("./availability/availability.module");
+const mailer_1 = require("@nestjs-modules/mailer");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -26,6 +27,18 @@ exports.AppModule = AppModule = __decorate([
         imports: [
             config_1.ConfigModule.forRoot({
                 isGlobal: true,
+            }),
+            mailer_1.MailerModule.forRoot({
+                transport: {
+                    service: 'gmail',
+                    auth: {
+                        user: process.env.MAIL_USER,
+                        pass: process.env.MAIL_PASSWORD,
+                    },
+                },
+                defaults: {
+                    from: '"Tutorías UDP" <no-reply@udp.cl>',
+                },
             }),
             prisma_module_1.PrismaModule,
             auth_module_1.AuthModule,

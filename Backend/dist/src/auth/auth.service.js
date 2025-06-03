@@ -38,6 +38,11 @@ let AuthService = class AuthService {
                 role: dto.role,
             },
         });
+        await this.prisma.notificationPreference.create({
+            data: {
+                userId: user.id,
+            },
+        });
         if (dto.role === register_dto_1.Role.STUDENT || dto.role === register_dto_1.Role.BOTH) {
             await this.prisma.studentProfile.create({
                 data: {
@@ -99,6 +104,19 @@ let AuthService = class AuthService {
                     email,
                     full_name: name,
                     role: 'STUDENT',
+                },
+            });
+            await this.prisma.notificationPreference.create({
+                data: {
+                    userId: user.id,
+                },
+            });
+            await this.prisma.studentProfile.create({
+                data: {
+                    userId: user.id,
+                    university: '',
+                    career: '',
+                    study_year: 0,
                 },
             });
         }

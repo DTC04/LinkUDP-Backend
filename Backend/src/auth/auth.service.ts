@@ -37,6 +37,15 @@ export class AuthService {
       },
     });
 
+    // Create default notification preferences for the new user
+    await this.prisma.notificationPreference.create({
+      data: {
+        userId: user.id,
+        // Default values from schema.prisma will be applied automatically
+        // e.g., email_on_booking: true, email_on_cancellation: true, etc.
+      },
+    });
+
     if (dto.role === Role.STUDENT || dto.role === Role.BOTH) {
       await this.prisma.studentProfile.create({
         data: {
@@ -111,7 +120,26 @@ export class AuthService {
         data: {
           email,
           full_name: name,
-          role: 'STUDENT',
+          role: 'STUDENT', // Default role for new Google sign-ups
+        },
+      });
+
+      // Create default notification preferences for the new Google user
+      await this.prisma.notificationPreference.create({
+        data: {
+          userId: user.id,
+          // Default values from schema.prisma will be applied
+        },
+      });
+
+      // Optionally, create a default StudentProfile for new Google users
+      // This depends on your application's logic for onboarding Google users
+      await this.prisma.studentProfile.create({
+        data: {
+          userId: user.id,
+          university: '', // Or some default/placeholder
+          career: '',     // Or some default/placeholder
+          study_year: 0,  // Or some default/placeholder
         },
       });
     }
