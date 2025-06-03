@@ -9,14 +9,31 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BookingsService = void 0;
+exports.BookingsService = exports.BookingService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
+const mailer_1 = require("@nestjs-modules/mailer");
+let BookingService = class BookingService {
+    mailerService;
+    prisma;
+    constructor(mailerService, prisma) {
+        this.mailerService = mailerService;
+        this.prisma = prisma;
+    }
+};
+exports.BookingService = BookingService;
+exports.BookingService = BookingService = __decorate([
+    (0, common_1.Injectable)(),
+    __metadata("design:paramtypes", [mailer_1.MailerService,
+        prisma_service_1.PrismaService])
+], BookingService);
 let BookingsService = class BookingsService {
     prisma;
-    constructor(prisma) {
+    mailerService;
+    constructor(prisma, mailerService) {
         this.prisma = prisma;
+        this.mailerService = mailerService;
     }
     async findStudentBookings(studentProfileId, statuses, upcoming, past) {
         const where = {
@@ -137,6 +154,17 @@ let BookingsService = class BookingsService {
                 where: { id: sessionId },
                 data: { status: client_1.BookingStatus.PENDING },
             });
+            const studentUser = await tx.user.findUnique({
+                where: { id: studentUserId },
+                select: { email: true, full_name: true },
+            });
+            if (studentUser?.email) {
+                await this.mailerService.sendMail({
+                    to: studentUser.email,
+                    subject: 'Confirmación de reserva de tutoría',
+                    text: `Hola ${studentUser.full_name}, tu reserva para la sesión de tutoría que comienza el ${tutoringSession.start_time.toLocaleString()} ha sido creada Exitosamente, Agradecemos tu preferencia.`,
+                });
+            }
             return booking;
         });
     }
@@ -235,6 +263,6 @@ let BookingsService = class BookingsService {
 exports.BookingsService = BookingsService;
 exports.BookingsService = BookingsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService, mailer_1.MailerService])
 ], BookingsService);
 //# sourceMappingURL=bookings.service.js.map

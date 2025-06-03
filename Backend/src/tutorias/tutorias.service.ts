@@ -1,12 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service'; 
 import { CreateTutoriaDto } from './dto/create-tutoria.dto';
 import { UpdateTutoriaDto } from './dto/update-tutoria.dto';
-import { TutoringSession, Prisma, BookingStatus } from '@prisma/client'; 
+import { TutoringSession, Prisma, BookingStatus, User, NotificationPreference } from '@prisma/client'; 
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class TutoriasService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(TutoriasService.name);
+  constructor(private prisma: PrismaService, private readonly mailerService: MailerService) {}
 
   async create(createTutoriaDto: CreateTutoriaDto): Promise<TutoringSession> {
     if (
@@ -60,9 +62,10 @@ export class TutoriasService {
         where.status = status as BookingStatus;
       }
     } else if (!tutorId) {
-      // For public view, show available and pending (booked) tutorials
-      // The frontend will need to handle displaying these statuses appropriately (e.g., disable booking for PENDING)
-      where.status = { in: ['AVAILABLE', 'PENDING'] };
+      // For public view, show available, pending (booked), and confirmed tutorials
+      // The frontend will need to handle displaying these statuses appropriately 
+      // (e.g., disable booking for PENDING and CONFIRMED)
+      where.status = { in: ['AVAILABLE', 'PENDING', 'CONFIRMED'] };
     }
 
 
@@ -155,19 +158,164 @@ export class TutoriasService {
     }
 
     try {
-      return await this.prisma.tutoringSession.update({
+      const updatedTutoria = await this.prisma.tutoringSession.update({
         where: { id },
         data: dataToUpdate,
+        include: { // Include course for notification details
+          course: true,
+        }
       });
+
+      // Notification logic
+      const bookings = await this.prisma.booking.findMany({
+        where: { 
+          sessionId: id,
+          status: { in: [BookingStatus.CONFIRMED, BookingStatus.PENDING] } 
+        },
+        include: {
+          studentProfile: {
+            include: {
+              user: {
+                include: {
+                  NotificationPreference: true,
+                }
+              }
+            }
+          }
+        }
+      });
+
+      for (const booking of bookings) {
+        const studentUser = booking.studentProfile.user;
+        if (studentUser) {
+          const notificationPayload = {
+            message: `La tutoría "${updatedTutoria.title}" de la asignatura "${updatedTutoria.course.name}" ha sido actualizada.`,
+            details: `Fecha: ${updatedTutoria.start_time.toLocaleDateString()}, Hora: ${updatedTutoria.start_time.toLocaleTimeString()} - ${updatedTutoria.end_time.toLocaleTimeString()}`,
+            tutoriaId: updatedTutoria.id,
+          };
+
+          // Create in-app notification
+          await this.prisma.notification.create({
+            data: {
+              userId: studentUser.id,
+              type: 'TUTORIA_UPDATED',
+              payload: notificationPayload as unknown as Prisma.InputJsonValue,
+            }
+          });
+          this.logger.log(`In-app notification created for user ${studentUser.id} for updated tutoria ${updatedTutoria.id}`);
+
+          // Send email notification if preferred
+          const prefs = studentUser.NotificationPreference;
+          const shouldSendEmail = !prefs || prefs.email_on_cancellation !== false; 
+
+          if (shouldSendEmail) {
+            try {
+              const emailSubject = `Actualización de Tutoría: ${updatedTutoria.title}`;
+              // Using toLocaleString() for date/time consistency with BookingsService
+              const eventTime = new Date(updatedTutoria.start_time); // Ensure it's a Date object
+              const emailText = `Hola ${studentUser.full_name},\n\nLa tutoría "${updatedTutoria.title}" de la asignatura "${updatedTutoria.course.name}" ha sido actualizada.\nNuevos detalles:\nHorario: ${eventTime.toLocaleString()}\nDuración aproximada: ${(new Date(updatedTutoria.end_time).getTime() - eventTime.getTime()) / (1000 * 60)} minutos.\n\nPuedes ver los detalles en: ${process.env.FRONTEND_URL}/tutoring/${updatedTutoria.id}\n\nSaludos,\nEquipo LinkUDP`;
+              
+              await this.mailerService.sendMail({
+                to: studentUser.email,
+                subject: emailSubject,
+                text: emailText,
+              });
+              this.logger.log(`Email notification successfully sent to ${studentUser.email} for updated tutoria ${updatedTutoria.id}`);
+            } catch (emailError) {
+              this.logger.error(`Failed to send update email to ${studentUser.email} for tutoria ${id}: ${emailError.message}`, emailError.stack);
+            }
+          }
+        } else {
+          this.logger.warn(`Student user not found for booking ID ${booking.id} during tutoria update ${updatedTutoria.id}. Skipping notifications for this booking.`);
+        }
+      }
+      return updatedTutoria;
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
         throw new NotFoundException(`Tutoría con ID "${id}" no encontrada.`);
       }
+      this.logger.error(`Error updating tutoria ${id}: ${error.message}`, error.stack);
       throw error;
     }
   }
 
   async remove(id: number): Promise<TutoringSession> {
+    // First, fetch booking details for notifications before deleting
+    const tutoriaToDelete = await this.prisma.tutoringSession.findUnique({
+      where: { id },
+      include: {
+        course: true, // For notification details
+        bookings: {
+          where: {
+            status: { in: [BookingStatus.CONFIRMED, BookingStatus.PENDING] }
+          },
+          include: {
+            studentProfile: {
+              include: {
+                user: {
+                  include: {
+                    NotificationPreference: true,
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!tutoriaToDelete) {
+      throw new NotFoundException(`Tutoría con ID "${id}" no encontrada para eliminar.`);
+    }
+
+    // Send notifications
+    for (const booking of tutoriaToDelete.bookings) {
+      const studentUser = booking.studentProfile.user;
+      if (studentUser) {
+        const notificationPayload = {
+          message: `La tutoría "${tutoriaToDelete.title}" de la asignatura "${tutoriaToDelete.course.name}" ha sido cancelada por el tutor.`,
+          details: `Estaba programada para: ${tutoriaToDelete.start_time.toLocaleDateString()}, Hora: ${tutoriaToDelete.start_time.toLocaleTimeString()} - ${tutoriaToDelete.end_time.toLocaleTimeString()}`,
+          tutoriaId: tutoriaToDelete.id,
+        };
+
+        await this.prisma.notification.create({
+          data: {
+            userId: studentUser.id,
+            type: 'TUTORIA_CANCELLED_BY_TUTOR', // More specific type
+            payload: notificationPayload as unknown as Prisma.InputJsonValue,
+          }
+        });
+        this.logger.log(`In-app notification created for user ${studentUser.id} for cancelled tutoria ${tutoriaToDelete.id}`);
+        
+        const prefs = studentUser.NotificationPreference;
+        const shouldSendEmailCancellation = !prefs || prefs.email_on_cancellation !== false;
+
+        if (shouldSendEmailCancellation) {
+           try {
+            const emailSubject = `Cancelación de Tutoría: ${tutoriaToDelete.title}`;
+            // Using toLocaleString() for date/time consistency with BookingsService
+            const eventTimeCancelled = new Date(tutoriaToDelete.start_time); // Ensure it's a Date object
+            const emailText = `Hola ${studentUser.full_name},\n\nLamentamos informarte que la tutoría "${tutoriaToDelete.title}" de la asignatura "${tutoriaToDelete.course.name}", programada para ${eventTimeCancelled.toLocaleString()}, ha sido cancelada por el tutor.\n\nSaludos,\nEquipo LinkUDP`;
+
+            await this.mailerService.sendMail({
+              to: studentUser.email,
+              subject: emailSubject,
+              text: emailText,
+            });
+            this.logger.log(`Email notification successfully sent to ${studentUser.email} for cancelled tutoria ${tutoriaToDelete.id}`);
+          } catch (emailError) {
+            this.logger.error(`Failed to send cancellation email to ${studentUser.email} for tutoria ${id}: ${emailError.message}`, emailError.stack);
+          }
+        }
+      }
+    }
+
+    await this.prisma.booking.deleteMany({
+      where: { sessionId: id },
+    });
+    this.logger.log(`Bookings for session ${id} deleted before session deletion.`);
+
+
     try {
       return await this.prisma.tutoringSession.delete({
         where: { id },
