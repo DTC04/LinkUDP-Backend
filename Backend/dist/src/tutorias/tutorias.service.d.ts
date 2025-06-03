@@ -2,12 +2,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateTutoriaDto } from './dto/create-tutoria.dto';
 import { UpdateTutoriaDto } from './dto/update-tutoria.dto';
 import { TutoringSession } from '@prisma/client';
-import { Request } from 'express';
 export declare class TutoriasService {
     private prisma;
-    private request;
-    constructor(prisma: PrismaService, request: Request);
-    private getAuthenticatedUserId;
+    constructor(prisma: PrismaService);
     create(createTutoriaDto: CreateTutoriaDto): Promise<TutoringSession>;
     findAll(ramo?: string, horario?: string, tutorId?: number, status?: string | string[], upcoming?: boolean, limit?: number): Promise<TutoringSession[]>;
     findOne(id: number): Promise<TutoringSession | null>;

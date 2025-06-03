@@ -1,3 +1,4 @@
+
 import {
   BadRequestException,
   ConflictException,
@@ -7,10 +8,18 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Booking, Prisma, BookingStatus } from '@prisma/client';
+import { MailerService } from '@nestjs-modules/mailer';
+@Injectable()
+export class BookingService {
+  constructor(
+    private readonly mailerService: MailerService,
+    private readonly prisma: PrismaService,
+  ) { }
 
+}
 @Injectable()
 export class BookingsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private mailerService: MailerService,) { }
 
   async findStudentBookings(
     studentProfileId: number,
@@ -168,6 +177,19 @@ export class BookingsService {
       });
 
       // Puedes añadir lógica para notificar al tutor aquí (e.g., usando un módulo de notificación o un servicio de correo electrónico)
+      // Obtener datos del estudiante 
+      const studentUser = await tx.user.findUnique({
+        where: { id: studentUserId },
+        select: { email: true, full_name: true },
+      });
+
+      if (studentUser?.email) {
+        await this.mailerService.sendMail({
+          to: studentUser.email,
+          subject: 'Confirmación de reserva de tutoría',
+          text: `Hola ${studentUser.full_name}, tu reserva para la sesión de tutoría que comienza el ${tutoringSession.start_time.toLocaleString()} ha sido creada Exitosamente, Agradecemos tu preferencia.`,
+        });
+      }
 
       return booking;
     });
