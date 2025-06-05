@@ -33,14 +33,16 @@ let TutoriasService = TutoriasService_1 = class TutoriasService {
             !createTutoriaDto.end_time) {
             throw new Error('Todos los campos son requeridos para publicar la tutoría.');
         }
+        const startTime = new Date(createTutoriaDto.start_time);
+        const sessionDate = new Date(Date.UTC(startTime.getUTCFullYear(), startTime.getUTCMonth(), startTime.getUTCDate()));
         return this.prisma.tutoringSession.create({
             data: {
                 tutorId: createTutoriaDto.tutorId,
                 courseId: createTutoriaDto.courseId,
                 title: createTutoriaDto.title,
                 description: createTutoriaDto.description,
-                date: new Date(createTutoriaDto.date),
-                start_time: new Date(createTutoriaDto.start_time),
+                date: sessionDate,
+                start_time: startTime,
                 end_time: new Date(createTutoriaDto.end_time),
                 location: createTutoriaDto.location,
                 notes: createTutoriaDto.notes,
@@ -134,13 +136,15 @@ let TutoriasService = TutoriasService_1 = class TutoriasService {
         return tutoria;
     }
     async update(id, updateTutoriaDto) {
-        const { date, start_time, end_time, ...restOfDto } = updateTutoriaDto;
+        const { start_time, end_time, date, ...restOfDto } = updateTutoriaDto;
         const dataToUpdate = { ...restOfDto };
-        if (date) {
-            dataToUpdate.date = new Date(date);
-        }
         if (start_time) {
-            dataToUpdate.start_time = new Date(start_time);
+            const newStartTime = new Date(start_time);
+            dataToUpdate.start_time = newStartTime;
+            dataToUpdate.date = new Date(Date.UTC(newStartTime.getUTCFullYear(), newStartTime.getUTCMonth(), newStartTime.getUTCDate()));
+        }
+        else if (date) {
+            dataToUpdate.date = new Date(date);
         }
         if (end_time) {
             dataToUpdate.end_time = new Date(end_time);
