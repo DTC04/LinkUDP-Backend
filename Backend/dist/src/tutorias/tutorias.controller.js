@@ -18,6 +18,7 @@ const tutorias_service_1 = require("./tutorias.service");
 const create_tutoria_dto_1 = require("./dto/create-tutoria.dto");
 const update_tutoria_dto_1 = require("./dto/update-tutoria.dto");
 const swagger_1 = require("@nestjs/swagger");
+const passport_1 = require("@nestjs/passport");
 let TutoriasController = class TutoriasController {
     tutoriasService;
     constructor(tutoriasService) {
@@ -50,6 +51,10 @@ let TutoriasController = class TutoriasController {
     }
     async remove(id) {
         return this.tutoriasService.remove(id);
+    }
+    async contactTutor(sessionId, message, req) {
+        await this.tutoriasService.contactTutor(sessionId, req.user.id, message);
+        return { success: true };
     }
 };
 exports.TutoriasController = TutoriasController;
@@ -114,6 +119,18 @@ __decorate([
     __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", Promise)
 ], TutoriasController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Post)(':sessionId/contact'),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
+    (0, swagger_1.ApiOperation)({ summary: 'Contactar al tutor de una tutoría (envía correo)' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Correo enviado al tutor exitosamente.' }),
+    __param(0, (0, common_1.Param)('sessionId', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Body)('message')),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, String, Object]),
+    __metadata("design:returntype", Promise)
+], TutoriasController.prototype, "contactTutor", null);
 exports.TutoriasController = TutoriasController = __decorate([
     (0, swagger_1.ApiTags)('tutorias'),
     (0, common_1.Controller)('tutorias'),
