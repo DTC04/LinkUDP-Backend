@@ -10,4 +10,7 @@ export declare class TutoriasController {
     findOne(id: number): Promise<TutoringSession>;
     update(id: number, updateTutoriaDto: UpdateTutoriaDto): Promise<TutoringSession>;
     remove(id: number): Promise<TutoringSession>;
+    contactTutor(sessionId: number, message: string, req: any): Promise<{
+        success: boolean;
+    }>;
 }

@@ -8,7 +8,11 @@ import { MailerService } from '@nestjs-modules/mailer';
 @Injectable()
 export class TutoriasService {
   private readonly logger = new Logger(TutoriasService.name);
-  constructor(private prisma: PrismaService, private readonly mailerService: MailerService) {}
+
+  constructor(
+    private prisma: PrismaService,
+    private readonly mailerService: MailerService
+  ) {}
 
   async create(createTutoriaDto: CreateTutoriaDto): Promise<TutoringSession> {
     if (
@@ -62,12 +66,8 @@ export class TutoriasService {
         where.status = status as BookingStatus;
       }
     } else if (!tutorId) {
-      // For public view, show available, pending (booked), and confirmed tutorials
-      // The frontend will need to handle displaying these statuses appropriately 
-      // (e.g., disable booking for PENDING and CONFIRMED)
       where.status = { in: ['AVAILABLE', 'PENDING', 'CONFIRMED'] };
     }
-
 
     if (ramo) {
       where.course = {
@@ -95,9 +95,8 @@ export class TutoriasService {
         tutor: {
           include: {
             user: { 
-              select: { id: true, full_name: true, email: true, photo_url: true }, // Added id: true
+              select: { id: true, full_name: true, email: true, photo_url: true },
             }
-            
           }
         },
         course: true,
@@ -125,13 +124,12 @@ export class TutoriasService {
           include: {
             user: {
               select: {
-                id: true, // Added id: true
+                id: true,
                 full_name: true,
                 email: true, 
                 photo_url: true,
               }
             }
-            
           }
         },
         course: true, 
@@ -161,7 +159,7 @@ export class TutoriasService {
       const updatedTutoria = await this.prisma.tutoringSession.update({
         where: { id },
         data: dataToUpdate,
-        include: { // Include course for notification details
+        include: {
           course: true,
         }
       });
@@ -211,8 +209,7 @@ export class TutoriasService {
           if (shouldSendEmail) {
             try {
               const emailSubject = `Actualización de Tutoría: ${updatedTutoria.title}`;
-              // Using toLocaleString() for date/time consistency with BookingsService
-              const eventTime = new Date(updatedTutoria.start_time); // Ensure it's a Date object
+              const eventTime = new Date(updatedTutoria.start_time);
               const emailText = `Hola ${studentUser.full_name},\n\nLa tutoría "${updatedTutoria.title}" de la asignatura "${updatedTutoria.course.name}" ha sido actualizada.\nNuevos detalles:\nHorario: ${eventTime.toLocaleString()}\nDuración aproximada: ${(new Date(updatedTutoria.end_time).getTime() - eventTime.getTime()) / (1000 * 60)} minutos.\n\nPuedes ver los detalles en: ${process.env.FRONTEND_URL}/tutoring/${updatedTutoria.id}\n\nSaludos,\nEquipo LinkUDP`;
               
               await this.mailerService.sendMail({
@@ -244,7 +241,7 @@ export class TutoriasService {
     const tutoriaToDelete = await this.prisma.tutoringSession.findUnique({
       where: { id },
       include: {
-        course: true, // For notification details
+        course: true,
         bookings: {
           where: {
             status: { in: [BookingStatus.CONFIRMED, BookingStatus.PENDING] }
@@ -281,7 +278,7 @@ export class TutoriasService {
         await this.prisma.notification.create({
           data: {
             userId: studentUser.id,
-            type: 'TUTORIA_CANCELLED_BY_TUTOR', // More specific type
+            type: 'TUTORIA_CANCELLED_BY_TUTOR',
             payload: notificationPayload as unknown as Prisma.InputJsonValue,
           }
         });
@@ -293,8 +290,7 @@ export class TutoriasService {
         if (shouldSendEmailCancellation) {
            try {
             const emailSubject = `Cancelación de Tutoría: ${tutoriaToDelete.title}`;
-            // Using toLocaleString() for date/time consistency with BookingsService
-            const eventTimeCancelled = new Date(tutoriaToDelete.start_time); // Ensure it's a Date object
+            const eventTimeCancelled = new Date(tutoriaToDelete.start_time);
             const emailText = `Hola ${studentUser.full_name},\n\nLamentamos informarte que la tutoría "${tutoriaToDelete.title}" de la asignatura "${tutoriaToDelete.course.name}", programada para ${eventTimeCancelled.toLocaleString()}, ha sido cancelada por el tutor.\n\nSaludos,\nEquipo LinkUDP`;
 
             await this.mailerService.sendMail({
@@ -315,7 +311,6 @@ export class TutoriasService {
     });
     this.logger.log(`Bookings for session ${id} deleted before session deletion.`);
 
-
     try {
       return await this.prisma.tutoringSession.delete({
         where: { id },
@@ -326,5 +321,59 @@ export class TutoriasService {
       }
       throw error;
     }
+  }
+
+  // ------------- 🚀 NUEVO MÉTODO: CONTACTAR TUTOR 🚀 -------------
+  async contactTutor(
+    sessionId: number,
+    studentUserId: number,
+    message: string
+  ): Promise<void> {
+    // 1. Buscar la sesión y los datos relacionados
+    const session = await this.prisma.tutoringSession.findUnique({
+      where: { id: sessionId },
+      include: {
+        course: true,
+        tutor: { include: { user: true } },
+      },
+    });
+
+    if (!session) {
+      throw new NotFoundException('Sesión de tutoría no encontrada.');
+    }
+
+    // 2. Buscar el perfil y usuario del estudiante
+    const studentProfile = await this.prisma.studentProfile.findFirst({
+      where: { userId: studentUserId },
+      include: { user: true },
+    });
+
+    if (!studentProfile) {
+      throw new NotFoundException('Perfil de estudiante no encontrado.');
+    }
+
+    // 3. Armar y enviar el correo
+    const subject = `Mensaje sobre tu tutoría de ${session.course.name}`;
+    const text = `
+Hola ${session.tutor.user.full_name},
+
+El estudiante ${studentProfile.user.full_name} (${studentProfile.user.email}) te ha enviado un mensaje sobre la tutoría de ${session.course.name.toUpperCase()} agendada para ${session.date.toLocaleDateString()}:
+
+"${message}"
+
+¡Por favor responde a la brevedad para coordinar!
+
+— Plataforma LinkUDP
+`;
+
+    await this.mailerService.sendMail({
+      to: session.tutor.user.email,
+      subject,
+      text,
+    });
+
+    this.logger.log(
+      `Correo enviado al tutor ${session.tutor.user.email} desde el estudiante ${studentProfile.user.email} sobre la sesión ${session.id}`,
+    );
   }
 }
