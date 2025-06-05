@@ -297,10 +297,48 @@ let TutoriasService = TutoriasService_1 = class TutoriasService {
             throw error;
         }
     }
+    async contactTutor(sessionId, studentUserId, message) {
+        const session = await this.prisma.tutoringSession.findUnique({
+            where: { id: sessionId },
+            include: {
+                course: true,
+                tutor: { include: { user: true } },
+            },
+        });
+        if (!session) {
+            throw new common_1.NotFoundException('Sesión de tutoría no encontrada.');
+        }
+        const studentProfile = await this.prisma.studentProfile.findFirst({
+            where: { userId: studentUserId },
+            include: { user: true },
+        });
+        if (!studentProfile) {
+            throw new common_1.NotFoundException('Perfil de estudiante no encontrado.');
+        }
+        const subject = `Mensaje sobre tu tutoría de ${session.course.name}`;
+        const text = `
+Hola ${session.tutor.user.full_name},
+
+El estudiante ${studentProfile.user.full_name} (${studentProfile.user.email}) te ha enviado un mensaje sobre la tutoría de ${session.course.name.toUpperCase()} agendada para ${session.date.toLocaleDateString()}:
+
+"${message}"
+
+¡Por favor responde a la brevedad para coordinar!
+
+— Plataforma LinkUDP
+`;
+        await this.mailerService.sendMail({
+            to: session.tutor.user.email,
+            subject,
+            text,
+        });
+        this.logger.log(`Correo enviado al tutor ${session.tutor.user.email} desde el estudiante ${studentProfile.user.email} sobre la sesión ${session.id}`);
+    }
 };
 exports.TutoriasService = TutoriasService;
 exports.TutoriasService = TutoriasService = TutoriasService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService, mailer_1.MailerService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        mailer_1.MailerService])
 ], TutoriasService);
 //# sourceMappingURL=tutorias.service.js.map
