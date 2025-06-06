@@ -37,7 +37,7 @@ exports.AppModule = AppModule = __decorate([
                     },
                 },
                 defaults: {
-                    from: '"Tutorías UDP" <no-reply@udp.cl>',
+                    from: `"LinkUDP" <${process.env.MAIL_USER}>`
                 },
             }),
             prisma_module_1.PrismaModule,
