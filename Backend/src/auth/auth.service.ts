@@ -9,12 +9,14 @@ import { RegisterDto, Role } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
+    private mailerService: MailerService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -34,6 +36,7 @@ export class AuthService {
         email: dto.email,
         password: hashedPassword,
         role: dto.role,
+        email_verified: false,
       },
     });
 
@@ -66,6 +69,18 @@ export class AuthService {
       });
     }
 
+   
+    const verificationToken = this.jwt.sign(
+      { userId: user.id },
+      { expiresIn: '1d', secret: process.env.JWT_SECRET },
+    );
+
+    await this.mailerService.sendMail({
+      to: user.email,
+      subject: 'Verifica tu correo electrónico',
+      text: `Hola ${user.full_name}, por favor verifica tu correo haciendo clic en el siguiente enlace:\n${process.env.FRONTEND_URL}/verify?token=${verificationToken}`,
+    });    
+
     const { password, ...safeUser } = user;
 
     const token = this.jwt.sign({
@@ -74,7 +89,8 @@ export class AuthService {
       role: user.role,
     });
 
-    return { user: safeUser, access_token: token };
+    return { user: safeUser, access_token: token, 
+      message: 'Te hemos enviado un correo para verificar tu cuenta.', };
   }
 
   async login(dto: LoginDto) {
@@ -85,6 +101,10 @@ export class AuthService {
     if (!user || !user.password) {
       await this.logAttempt(null, false);
       throw new UnauthorizedException('Credenciales inválidas');
+    }
+
+    if (!user.email_verified) {
+      throw new UnauthorizedException('Debes verificar tu correo electrónico antes de iniciar sesión.');
     }
 
     const isBlocked = await this.isUserTemporarilyBlocked(user.id);
@@ -120,7 +140,8 @@ export class AuthService {
         data: {
           email,
           full_name: name,
-          role: 'STUDENT', // Default role for new Google sign-ups
+          role: 'STUDENT',
+          email_verified: true,
         },
       });
 
@@ -157,7 +178,19 @@ export class AuthService {
     return { token, isNewUser, user };
   }
   
-  
+  async verifyEmailToken(token: string) {
+    try {
+      const payload = this.jwt.verify(token, { secret: process.env.JWT_SECRET });
+      await this.prisma.user.update({
+        where: { id: payload.userId },
+        data: { email_verified: true },
+      });
+      return payload;
+    } catch (error) {
+      throw new UnauthorizedException('Token inválido o expirado.');
+    }
+  }
+
 
   async assignRole(userId: number, role: Role.STUDENT | Role.TUTOR) {
     await this.prisma.user.update({

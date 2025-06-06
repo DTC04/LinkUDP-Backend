@@ -17,6 +17,7 @@ import { LoginDto } from './dto/login.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { GetUser } from './get-user.decorator';
+import { Query } from '@nestjs/common';
 
 const cookieOptions = {
   httpOnly: true,
@@ -145,5 +146,15 @@ export class AuthController {
   getMe(@GetUser() user: any) {
     const { password, ...safeUser } = user;
     return safeUser;
+  }
+
+  @Get('verify')
+  async verifyEmail(@Query('token') token: string) {
+    try {
+      const payload = await this.authService.verifyEmailToken(token);
+      return { message: 'Correo verificado con éxito.' };
+    } catch (error) {
+      throw new UnauthorizedException('Token inválido o expirado.');
+    }
   }
 }
