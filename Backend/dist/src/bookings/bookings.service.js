@@ -14,6 +14,7 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const mailer_1 = require("@nestjs-modules/mailer");
+const availability_service_1 = require("../availability/availability.service");
 let BookingService = class BookingService {
     mailerService;
     prisma;
@@ -31,9 +32,11 @@ exports.BookingService = BookingService = __decorate([
 let BookingsService = class BookingsService {
     prisma;
     mailerService;
-    constructor(prisma, mailerService) {
+    availabilityService;
+    constructor(prisma, mailerService, availabilityService) {
         this.prisma = prisma;
         this.mailerService = mailerService;
+        this.availabilityService = availabilityService;
     }
     async findStudentBookings(studentProfileId, statuses, upcoming, past) {
         const where = {
@@ -231,6 +234,36 @@ let BookingsService = class BookingsService {
                 where: { id: booking.sessionId },
                 data: { status: client_1.BookingStatus.CONFIRMED },
             });
+            const start = new Date(booking.session.start_time);
+            const end = new Date(booking.session.end_time);
+            const daysMap = [
+                'DOMINGO',
+                'LUNES',
+                'MARTES',
+                'MIERCOLES',
+                'JUEVES',
+                'VIERNES',
+                'SABADO',
+            ];
+            const day_of_week = daysMap[start.getUTCDay()];
+            const normalizeTime = (d) => new Date(Date.UTC(1970, 0, 1, d.getUTCHours(), d.getUTCMinutes(), 0, 0));
+            const normalizedStart = normalizeTime(start);
+            const normalizedEnd = normalizeTime(end);
+            console.log('----- ELIMINANDO BLOQUE DISPONIBLE -----');
+            console.log('Tutor ID:', tutorProfileId);
+            console.log('Día:', day_of_week);
+            console.log('Start normalizado:', normalizedStart.toISOString());
+            console.log('End normalizado:', normalizedEnd.toISOString());
+            console.log('----------------------------------------');
+            const deleted = await tx.availabilityBlock.deleteMany({
+                where: {
+                    tutorId: tutorProfileId,
+                    day_of_week: day_of_week,
+                    start_time: normalizedStart,
+                    end_time: normalizedEnd,
+                },
+            });
+            console.log(`Bloques eliminados: ${deleted.count}`);
         });
     }
     async confirmBookingBySession(sessionId, tutorProfileId) {
@@ -263,6 +296,6 @@ let BookingsService = class BookingsService {
 exports.BookingsService = BookingsService;
 exports.BookingsService = BookingsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService, mailer_1.MailerService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService, mailer_1.MailerService, availability_service_1.AvailabilityService])
 ], BookingsService);
 //# sourceMappingURL=bookings.service.js.map

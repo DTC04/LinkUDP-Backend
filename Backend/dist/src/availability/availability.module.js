@@ -18,6 +18,7 @@ exports.AvailabilityModule = AvailabilityModule = __decorate([
     (0, common_1.Module)({
         controllers: [availability_controller_1.AvailabilityController],
         providers: [availability_service_1.AvailabilityService, prisma_service_1.PrismaService],
+        exports: [availability_service_1.AvailabilityService],
     })
 ], AvailabilityModule);
 //# sourceMappingURL=availability.module.js.map
