@@ -236,31 +236,11 @@ let BookingsService = class BookingsService {
             });
             const start = new Date(booking.session.start_time);
             const end = new Date(booking.session.end_time);
-            const daysMap = [
-                'DOMINGO',
-                'LUNES',
-                'MARTES',
-                'MIERCOLES',
-                'JUEVES',
-                'VIERNES',
-                'SABADO',
-            ];
-            const day_of_week = daysMap[start.getUTCDay()];
-            const normalizeTime = (d) => new Date(Date.UTC(1970, 0, 1, d.getUTCHours(), d.getUTCMinutes(), 0, 0));
-            const normalizedStart = normalizeTime(start);
-            const normalizedEnd = normalizeTime(end);
-            console.log('----- ELIMINANDO BLOQUE DISPONIBLE -----');
-            console.log('Tutor ID:', tutorProfileId);
-            console.log('Día:', day_of_week);
-            console.log('Start normalizado:', normalizedStart.toISOString());
-            console.log('End normalizado:', normalizedEnd.toISOString());
-            console.log('----------------------------------------');
             const deleted = await tx.availabilityBlock.deleteMany({
                 where: {
                     tutorId: tutorProfileId,
-                    day_of_week: day_of_week,
-                    start_time: normalizedStart,
-                    end_time: normalizedEnd,
+                    start_time: booking.session.start_time,
+                    end_time: booking.session.end_time,
                 },
             });
             console.log(`Bloques eliminados: ${deleted.count}`);

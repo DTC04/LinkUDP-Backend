@@ -149,6 +149,8 @@ model AvailabilityBlock {
   day_of_week DayOfWeek
   start_time  DateTime
   end_time    DateTime
+
+  @@index([tutorId, start_time, end_time])
 }
 
 model TutoringSession {
