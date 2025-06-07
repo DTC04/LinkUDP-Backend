@@ -9,6 +9,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { Booking, Prisma, BookingStatus } from '@prisma/client';
 import { MailerService } from '@nestjs-modules/mailer';
+import { AvailabilityService } from '../availability/availability.service';
 @Injectable()
 export class BookingService {
   constructor(
@@ -19,7 +20,7 @@ export class BookingService {
 }
 @Injectable()
 export class BookingsService {
-  constructor(private prisma: PrismaService, private mailerService: MailerService,) { }
+  constructor(private prisma: PrismaService, private mailerService: MailerService,private availabilityService: AvailabilityService,) { }
 
   async findStudentBookings(
     studentProfileId: number,
@@ -254,71 +255,81 @@ export class BookingsService {
         });
       }
     });
-  }
-
-    async confirmBooking(
-    bookingId: number,
-    tutorProfileId: number,
-  ): Promise<void> {
-    return this.prisma.$transaction(async (tx) => {
-      const booking = await tx.booking.findUnique({
-        where: { id: bookingId },
-        include: { session: true },
-      });
-
-      if (!booking) {
-        throw new NotFoundException('Reserva no encontrada.');
-      }
-
-      // Verifica que el perfil de tutor autenticado sea el tutor de la sesión
-      if (booking.session.tutorId !== tutorProfileId) {
-        throw new ForbiddenException('No tienes permiso para confirmar esta reserva.');
-      }
-
-      if (booking.status !== BookingStatus.PENDING) {
-        throw new ConflictException('Solo puedes confirmar reservas pendientes.');
-      }
-
-      // Actualiza el estado del booking
-      await tx.booking.update({
-        where: { id: bookingId },
-        data: { status: BookingStatus.CONFIRMED },
-      });
-
-      // Opcional: actualizar el estado de la sesión si lo necesitas
-      await tx.tutoringSession.update({
-        where: { id: booking.sessionId },
-        data: { status: BookingStatus.CONFIRMED },
-      });
-
-      const session = booking.session;
-      const start = new Date(session.start_time);
-      const end = new Date(session.end_time);
-
-      const daysMap = [
-        'DOMINGO',
-        'LUNES',
-        'MARTES',
-        'MIERCOLES',
-        'JUEVES',
-        'VIERNES',
-        'SABADO',
-      ];
-      const day_of_week = daysMap[start.getUTCDay()];
-
-      const normalizeTime = (d: Date) =>
-        new Date(Date.UTC(1970, 0, 1, d.getUTCHours(), d.getUTCMinutes(), 0, 0));
-
-      await tx.availabilityBlock.deleteMany({
-        where: {
-          tutorId: tutorProfileId,
-          day_of_week: day_of_week as any,
-          start_time: normalizeTime(start),
-          end_time: normalizeTime(end),
-        },
-      });
+  }async confirmBooking(
+  bookingId: number,
+  tutorProfileId: number,
+): Promise<void> {
+  return this.prisma.$transaction(async (tx) => {
+    const booking = await tx.booking.findUnique({
+      where: { id: bookingId },
+      include: { session: true },
     });
-  }
+
+    if (!booking) {
+      throw new NotFoundException('Reserva no encontrada.');
+    }
+
+    if (booking.session.tutorId !== tutorProfileId) {
+      throw new ForbiddenException('No tienes permiso para confirmar esta reserva.');
+    }
+
+    if (booking.status !== BookingStatus.PENDING) {
+      throw new ConflictException('Solo puedes confirmar reservas pendientes.');
+    }
+
+    await tx.booking.update({
+      where: { id: bookingId },
+      data: { status: BookingStatus.CONFIRMED },
+    });
+
+    await tx.tutoringSession.update({
+      where: { id: booking.sessionId },
+      data: { status: BookingStatus.CONFIRMED },
+    });
+
+    // Bloquear la disponibilidad dentro de la transacción
+    const start = new Date(booking.session.start_time);
+    const end = new Date(booking.session.end_time);
+
+    const daysMap = [
+      'DOMINGO',
+      'LUNES',
+      'MARTES',
+      'MIERCOLES',
+      'JUEVES',
+      'VIERNES',
+      'SABADO',
+    ];
+    const day_of_week = daysMap[start.getUTCDay()];
+
+    const normalizeTime = (d: Date) =>
+      new Date(Date.UTC(1970, 0, 1, d.getUTCHours(), d.getUTCMinutes(), 0, 0));
+
+    const normalizedStart = normalizeTime(start);
+    const normalizedEnd = normalizeTime(end);
+
+    // 👇 Agregamos logs para depurar
+    console.log('----- ELIMINANDO BLOQUE DISPONIBLE -----');
+    console.log('Tutor ID:', tutorProfileId);
+    console.log('Día:', day_of_week);
+    console.log('Start normalizado:', normalizedStart.toISOString());
+    console.log('End normalizado:', normalizedEnd.toISOString());
+    console.log('----------------------------------------');
+
+    const deleted = await tx.availabilityBlock.deleteMany({
+      where: {
+        tutorId: tutorProfileId,
+        day_of_week: day_of_week as any,
+        start_time: normalizedStart,
+        end_time: normalizedEnd,
+      },
+    });
+
+    console.log(`Bloques eliminados: ${deleted.count}`);
+  });
+}
+
+
   
   async confirmBookingBySession(sessionId: number, tutorProfileId: number): Promise<void> {
     const booking = await this.prisma.booking.findFirst({
