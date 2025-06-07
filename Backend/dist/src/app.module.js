@@ -19,6 +19,7 @@ const bookings_module_1 = require("./bookings/bookings.module");
 const courses_module_1 = require("./courses/courses.module");
 const availability_module_1 = require("./availability/availability.module");
 const mailer_1 = require("@nestjs-modules/mailer");
+const feedback_module_1 = require("./feedback/feedback.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -37,7 +38,7 @@ exports.AppModule = AppModule = __decorate([
                     },
                 },
                 defaults: {
-                    from: `"LinkUDP" <${process.env.MAIL_USER}>`
+                    from: `"LinkUDP" <${process.env.MAIL_USER}>`,
                 },
             }),
             prisma_module_1.PrismaModule,
@@ -47,6 +48,7 @@ exports.AppModule = AppModule = __decorate([
             bookings_module_1.BookingsModule,
             courses_module_1.CoursesModule,
             availability_module_1.AvailabilityModule,
+            feedback_module_1.FeedbackModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

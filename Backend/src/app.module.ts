@@ -10,6 +10,7 @@ import { BookingsModule } from './bookings/bookings.module';
 import { CoursesModule } from './courses/courses.module';
 import { AvailabilityModule } from './availability/availability.module';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { FeedbackModule } from './feedback/feedback.module'; 
 
 @Module({
   imports: [
@@ -25,10 +26,11 @@ import { MailerModule } from '@nestjs-modules/mailer';
         },
       },
       defaults: {
-        from: `"LinkUDP" <${process.env.MAIL_USER}>`
+        from: `"LinkUDP" <${process.env.MAIL_USER}>`,
       },
     }),
 
+    // 🔌 Módulos del sistema
     PrismaModule,
     AuthModule,
     TutoriasModule,
@@ -36,8 +38,9 @@ import { MailerModule } from '@nestjs-modules/mailer';
     BookingsModule,
     CoursesModule,
     AvailabilityModule,
+    FeedbackModule, // ✅ IMPORTADO AQUÍ
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}
