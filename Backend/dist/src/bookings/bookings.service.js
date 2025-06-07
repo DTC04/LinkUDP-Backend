@@ -231,6 +231,28 @@ let BookingsService = class BookingsService {
                 where: { id: booking.sessionId },
                 data: { status: client_1.BookingStatus.CONFIRMED },
             });
+            const session = booking.session;
+            const start = new Date(session.start_time);
+            const end = new Date(session.end_time);
+            const daysMap = [
+                'DOMINGO',
+                'LUNES',
+                'MARTES',
+                'MIERCOLES',
+                'JUEVES',
+                'VIERNES',
+                'SABADO',
+            ];
+            const day_of_week = daysMap[start.getUTCDay()];
+            const normalizeTime = (d) => new Date(Date.UTC(1970, 0, 1, d.getUTCHours(), d.getUTCMinutes(), 0, 0));
+            await tx.availabilityBlock.deleteMany({
+                where: {
+                    tutorId: tutorProfileId,
+                    day_of_week: day_of_week,
+                    start_time: normalizeTime(start),
+                    end_time: normalizeTime(end),
+                },
+            });
         });
     }
     async confirmBookingBySession(sessionId, tutorProfileId) {

@@ -256,7 +256,10 @@ export class BookingsService {
     });
   }
 
-  async confirmBooking(bookingId: number, tutorProfileId: number): Promise<void> {
+    async confirmBooking(
+    bookingId: number,
+    tutorProfileId: number,
+  ): Promise<void> {
     return this.prisma.$transaction(async (tx) => {
       const booking = await tx.booking.findUnique({
         where: { id: bookingId },
@@ -287,9 +290,36 @@ export class BookingsService {
         where: { id: booking.sessionId },
         data: { status: BookingStatus.CONFIRMED },
       });
+
+      const session = booking.session;
+      const start = new Date(session.start_time);
+      const end = new Date(session.end_time);
+
+      const daysMap = [
+        'DOMINGO',
+        'LUNES',
+        'MARTES',
+        'MIERCOLES',
+        'JUEVES',
+        'VIERNES',
+        'SABADO',
+      ];
+      const day_of_week = daysMap[start.getUTCDay()];
+
+      const normalizeTime = (d: Date) =>
+        new Date(Date.UTC(1970, 0, 1, d.getUTCHours(), d.getUTCMinutes(), 0, 0));
+
+      await tx.availabilityBlock.deleteMany({
+        where: {
+          tutorId: tutorProfileId,
+          day_of_week: day_of_week as any,
+          start_time: normalizeTime(start),
+          end_time: normalizeTime(end),
+        },
+      });
     });
   }
-
+  
   async confirmBookingBySession(sessionId: number, tutorProfileId: number): Promise<void> {
     const booking = await this.prisma.booking.findFirst({
       where: {
