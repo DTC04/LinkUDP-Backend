@@ -25,7 +25,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
         },
       },
       defaults: {
-        from: '"Tutorías UDP" <no-reply@udp.cl>', // Cambia si deseas
+        from: `"LinkUDP" <${process.env.MAIL_USER}>`
       },
     }),
 

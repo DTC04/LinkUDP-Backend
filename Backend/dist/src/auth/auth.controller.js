@@ -20,6 +20,7 @@ const login_dto_1 = require("./dto/login.dto");
 const passport_1 = require("@nestjs/passport");
 const jwt_auth_guard_1 = require("./jwt-auth.guard");
 const get_user_decorator_1 = require("./get-user.decorator");
+const common_2 = require("@nestjs/common");
 const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -102,6 +103,15 @@ let AuthController = class AuthController {
         const { password, ...safeUser } = user;
         return safeUser;
     }
+    async verifyEmail(token) {
+        try {
+            const payload = await this.authService.verifyEmailToken(token);
+            return { message: 'Correo verificado con éxito.' };
+        }
+        catch (error) {
+            throw new common_1.UnauthorizedException('Token inválido o expirado.');
+        }
+    }
 };
 exports.AuthController = AuthController;
 __decorate([
@@ -159,6 +169,13 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "getMe", null);
+__decorate([
+    (0, common_1.Get)('verify'),
+    __param(0, (0, common_2.Query)('token')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "verifyEmail", null);
 exports.AuthController = AuthController = __decorate([
     (0, common_1.Controller)('auth'),
     __metadata("design:paramtypes", [auth_service_1.AuthService])

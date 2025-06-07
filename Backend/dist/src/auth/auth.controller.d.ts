@@ -19,6 +19,7 @@ export declare class AuthController {
             updated_at: Date;
         };
         access_token: string;
+        message: string;
     }>;
     login(dto: LoginDto, res: Response): Promise<{
         user: {
@@ -50,4 +51,7 @@ export declare class AuthController {
         redirectTo: string;
     }>;
     getMe(user: any): any;
+    verifyEmail(token: string): Promise<{
+        message: string;
+    }>;
 }

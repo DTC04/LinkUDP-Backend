@@ -27,14 +27,17 @@ export class TutoriasService {
       throw new Error('Todos los campos son requeridos para publicar la tutoría.');
     }
 
+    const startTime = new Date(createTutoriaDto.start_time);
+    const sessionDate = new Date(Date.UTC(startTime.getUTCFullYear(), startTime.getUTCMonth(), startTime.getUTCDate()));
+
     return this.prisma.tutoringSession.create({
       data: {
         tutorId: createTutoriaDto.tutorId,
         courseId: createTutoriaDto.courseId,
         title: createTutoriaDto.title,
         description: createTutoriaDto.description,
-        date: new Date(createTutoriaDto.date),
-        start_time: new Date(createTutoriaDto.start_time),
+        date: sessionDate,
+        start_time: startTime,
         end_time: new Date(createTutoriaDto.end_time),
         location: createTutoriaDto.location,
         notes: createTutoriaDto.notes,
@@ -142,18 +145,35 @@ export class TutoriasService {
   }
 
   async update(id: number, updateTutoriaDto: UpdateTutoriaDto): Promise<TutoringSession> {
-    const { date, start_time, end_time, ...restOfDto } = updateTutoriaDto;
+    const { start_time, end_time, date, ...restOfDto } = updateTutoriaDto; // 'date' is explicitly extracted
     const dataToUpdate: Prisma.TutoringSessionUpdateInput = { ...restOfDto };
 
-    if (date) {
-      dataToUpdate.date = new Date(date);
-    }
     if (start_time) {
-      dataToUpdate.start_time = new Date(start_time);
+      const newStartTime = new Date(start_time);
+      dataToUpdate.start_time = newStartTime;
+      // Always derive 'date' from 'start_time' if 'start_time' is provided
+      dataToUpdate.date = new Date(Date.UTC(newStartTime.getUTCFullYear(), newStartTime.getUTCMonth(), newStartTime.getUTCDate()));
+    } else if (date) {
+      // This case is tricky. If only 'date' is provided without 'start_time',
+      // it implies changing the date part of the existing start_time.
+      // However, without knowing the existing start_time's time part, we can't accurately construct a new start_time.
+      // For now, we'll update 'date' directly if 'start_time' is not provided.
+      // This relies on the frontend sending 'date' as UTC midnight if it intends to change only the day.
+      // A more robust solution would require fetching the existing session to combine the new date with existing time,
+      // or disallowing 'date' updates without 'start_time'.
+      // For simplicity and to match previous partial logic:
+      dataToUpdate.date = new Date(date);
+      // WARNING: This might lead to date and start_time becoming out of sync if not handled carefully by the client.
+      // Ideally, client should always send start_time if the date changes.
     }
+
     if (end_time) {
       dataToUpdate.end_time = new Date(end_time);
     }
+
+    // If 'date' was in updateTutoriaDto but 'start_time' was not,
+    // and we updated dataToUpdate.date directly, we should log a warning or consider if this is desired.
+    // For now, the above logic prioritizes start_time for setting date, then falls back to dto.date if start_time is absent.
 
     try {
       const updatedTutoria = await this.prisma.tutoringSession.update({
