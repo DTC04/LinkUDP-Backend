@@ -13,5 +13,6 @@ export declare class TutoriasService {
     findOne(id: number): Promise<TutoringSession | null>;
     update(id: number, updateTutoriaDto: UpdateTutoriaDto): Promise<TutoringSession>;
     remove(id: number): Promise<TutoringSession>;
+    getRecommendedTutorings(userId?: number): Promise<TutoringSession[]>;
     contactTutor(sessionId: number, studentUserId: number, message: string): Promise<void>;
 }
