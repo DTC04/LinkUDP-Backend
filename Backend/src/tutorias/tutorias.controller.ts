@@ -18,6 +18,9 @@ import { UpdateTutoriaDto } from './dto/update-tutoria.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { TutoringSession } from '@prisma/client';
 import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { GetUser } from '../auth/get-user.decorator';
+
 
 @ApiTags('tutorias')
 @Controller('tutorias')
@@ -59,6 +62,13 @@ export class TutoriasController {
     }
     return tutorias;
   }
+  // 🔁 Esto va antes del Get(':id')
+@Get('/recomendadas')
+@UseGuards(JwtAuthGuard)
+async getRecommended(@GetUser() user: { id: number }) {
+  console.log("🧠 Usuario recibido:", user);
+  return this.tutoriasService.getRecommendedTutorings(user.id);
+}
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener los detalles de una tutoría específica' })

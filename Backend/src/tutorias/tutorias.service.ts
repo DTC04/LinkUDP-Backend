@@ -343,6 +343,57 @@ export class TutoriasService {
     }
   }
 
+  async getRecommendedTutorings(userId?: number): Promise<TutoringSession[]> {
+    console.log("📌 Obteniendo recomendaciones para el userId:", userId);
+    const where: Prisma.TutoringSessionWhereInput = {
+      status: { in: ['AVAILABLE', 'PENDING'] },
+      start_time: { gt: new Date() },
+    };
+  
+    const orderBy: Prisma.TutoringSessionOrderByWithRelationInput[] = [];
+  
+    if (userId) {
+      const pastBookings = await this.prisma.booking.findMany({
+        where: {
+          studentProfile: { user: { id: userId } },
+          status: { in: ['CONFIRMED'] },
+        },
+        include: {
+          session: {
+            select: {
+              courseId: true,
+              tutorId: true,
+            },
+          },
+        },
+      });
+  
+      const courseIds = [...new Set(pastBookings.map(b => b.session.courseId))];
+      const tutorIds = [...new Set(pastBookings.map(b => b.session.tutorId))];
+      
+      where.OR = [
+        { courseId: { in: courseIds } },
+        { tutorId: { in: tutorIds } },
+      ];
+    } else {
+      orderBy.push({ bookings: { _count: 'desc' } });
+    }
+  
+    return this.prisma.tutoringSession.findMany({
+      where,
+      include: {
+        course: true,
+        tutor: { include: { user: true } },
+      },
+      orderBy,
+      take: 6,
+    });
+  }
+  
+
+
+
+
   // ------------- 🚀 NUEVO MÉTODO: CONTACTAR TUTOR 🚀 -------------
   async contactTutor(
     sessionId: number,

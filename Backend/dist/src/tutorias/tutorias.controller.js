@@ -19,6 +19,8 @@ const create_tutoria_dto_1 = require("./dto/create-tutoria.dto");
 const update_tutoria_dto_1 = require("./dto/update-tutoria.dto");
 const swagger_1 = require("@nestjs/swagger");
 const passport_1 = require("@nestjs/passport");
+const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
+const get_user_decorator_1 = require("../auth/get-user.decorator");
 let TutoriasController = class TutoriasController {
     tutoriasService;
     constructor(tutoriasService) {
@@ -38,6 +40,10 @@ let TutoriasController = class TutoriasController {
         if (tutorias.length === 0 && ramo) {
         }
         return tutorias;
+    }
+    async getRecommended(user) {
+        console.log("🧠 Usuario recibido:", user);
+        return this.tutoriasService.getRecommendedTutorings(user.id);
     }
     async findOne(id) {
         const tutoria = await this.tutoriasService.findOne(id);
@@ -88,6 +94,14 @@ __decorate([
     __metadata("design:paramtypes", [String, String, Number, Object, String, Number]),
     __metadata("design:returntype", Promise)
 ], TutoriasController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Get)('/recomendadas'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __param(0, (0, get_user_decorator_1.GetUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], TutoriasController.prototype, "getRecommended", null);
 __decorate([
     (0, common_1.Get)(':id'),
     (0, swagger_1.ApiOperation)({ summary: 'Obtener los detalles de una tutoría específica' }),
