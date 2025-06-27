@@ -158,6 +158,21 @@ let AuthService = class AuthService {
             throw new common_1.UnauthorizedException('Token inválido o expirado.');
         }
     }
+    async resendVerificationEmail(email) {
+        const user = await this.prisma.user.findUnique({ where: { email } });
+        if (!user) {
+            return;
+        }
+        if (user.email_verified) {
+            return;
+        }
+        const verificationToken = this.jwt.sign({ userId: user.id }, { expiresIn: '1d', secret: process.env.JWT_SECRET });
+        await this.mailerService.sendMail({
+            to: user.email,
+            subject: 'Verifica tu correo electrónico',
+            text: `Hola ${user.full_name}, por favor verifica tu correo haciendo clic en el siguiente enlace:\n${process.env.FRONTEND_URL}/verify?token=${verificationToken}`,
+        });
+    }
     async assignRole(userId, role) {
         await this.prisma.user.update({
             where: { id: userId },

@@ -45,6 +45,7 @@ export declare class AuthService {
         user: any;
     }>;
     verifyEmailToken(token: string): Promise<any>;
+    resendVerificationEmail(email: string): Promise<void>;
     assignRole(userId: number, role: Role.STUDENT | Role.TUTOR): Promise<void>;
     private logAttempt;
     private isUserTemporarilyBlocked;

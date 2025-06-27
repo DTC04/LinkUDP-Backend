@@ -54,4 +54,7 @@ export declare class AuthController {
     verifyEmail(token: string): Promise<{
         message: string;
     }>;
+    resendVerificationEmail(email: string): Promise<{
+        message: string;
+    }>;
 }
