@@ -380,6 +380,41 @@ El estudiante ${studentProfile.user.full_name} (${studentProfile.user.email}) te
         });
         this.logger.log(`Correo enviado al tutor ${session.tutor.user.email} desde el estudiante ${studentProfile.user.email} sobre la sesión ${session.id}`);
     }
+    async save(sessionId, userId) {
+        return this.prisma.savedTutoring.create({
+            data: {
+                sessionId,
+                userId,
+            },
+        });
+    }
+    async unsave(sessionId, userId) {
+        return this.prisma.savedTutoring.delete({
+            where: {
+                userId_sessionId: {
+                    userId,
+                    sessionId,
+                },
+            },
+        });
+    }
+    async getSaved(userId) {
+        return this.prisma.savedTutoring.findMany({
+            where: { userId },
+            include: {
+                session: {
+                    include: {
+                        tutor: {
+                            include: {
+                                user: true,
+                            },
+                        },
+                        course: true,
+                    },
+                },
+            },
+        });
+    }
 };
 exports.TutoriasService = TutoriasService;
 exports.TutoriasService = TutoriasService = TutoriasService_1 = __decorate([

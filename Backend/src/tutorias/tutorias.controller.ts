@@ -111,4 +111,25 @@ async getRecommended(@GetUser() user: { id: number }) {
     await this.tutoriasService.contactTutor(sessionId, req.user.id, message);
     return { success: true };
   }
+
+  @Post(':id/save')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Guardar una tutoría' })
+  async save(@Param('id', ParseIntPipe) id: number, @GetUser() user: { id: number }) {
+    return this.tutoriasService.save(id, user.id);
+  }
+
+  @Delete(':id/save')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Eliminar una tutoría guardada' })
+  async unsave(@Param('id', ParseIntPipe) id: number, @GetUser() user: { id: number }) {
+    return this.tutoriasService.unsave(id, user.id);
+  }
+
+  @Get('me/saved')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Obtener las tutorías guardadas por el usuario' })
+  async getSaved(@GetUser() user: { id: number }) {
+    return this.tutoriasService.getSaved(user.id);
+  }
 }

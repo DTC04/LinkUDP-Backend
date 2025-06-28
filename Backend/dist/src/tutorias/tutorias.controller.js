@@ -62,6 +62,15 @@ let TutoriasController = class TutoriasController {
         await this.tutoriasService.contactTutor(sessionId, req.user.id, message);
         return { success: true };
     }
+    async save(id, user) {
+        return this.tutoriasService.save(id, user.id);
+    }
+    async unsave(id, user) {
+        return this.tutoriasService.unsave(id, user.id);
+    }
+    async getSaved(user) {
+        return this.tutoriasService.getSaved(user.id);
+    }
 };
 exports.TutoriasController = TutoriasController;
 __decorate([
@@ -145,6 +154,35 @@ __decorate([
     __metadata("design:paramtypes", [Number, String, Object]),
     __metadata("design:returntype", Promise)
 ], TutoriasController.prototype, "contactTutor", null);
+__decorate([
+    (0, common_1.Post)(':id/save'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Guardar una tutoría' }),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, get_user_decorator_1.GetUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:returntype", Promise)
+], TutoriasController.prototype, "save", null);
+__decorate([
+    (0, common_1.Delete)(':id/save'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Eliminar una tutoría guardada' }),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, get_user_decorator_1.GetUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:returntype", Promise)
+], TutoriasController.prototype, "unsave", null);
+__decorate([
+    (0, common_1.Get)('me/saved'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Obtener las tutorías guardadas por el usuario' }),
+    __param(0, (0, get_user_decorator_1.GetUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], TutoriasController.prototype, "getSaved", null);
 exports.TutoriasController = TutoriasController = __decorate([
     (0, swagger_1.ApiTags)('tutorias'),
     (0, common_1.Controller)('tutorias'),

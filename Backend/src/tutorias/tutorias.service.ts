@@ -447,4 +447,42 @@ El estudiante ${studentProfile.user.full_name} (${studentProfile.user.email}) te
       `Correo enviado al tutor ${session.tutor.user.email} desde el estudiante ${studentProfile.user.email} sobre la sesión ${session.id}`,
     );
   }
+
+  async save(sessionId: number, userId: number) {
+    return this.prisma.savedTutoring.create({
+      data: {
+        sessionId,
+        userId,
+      },
+    });
+  }
+
+  async unsave(sessionId: number, userId: number) {
+    return this.prisma.savedTutoring.delete({
+      where: {
+        userId_sessionId: {
+          userId,
+          sessionId,
+        },
+      },
+    });
+  }
+
+  async getSaved(userId: number) {
+    return this.prisma.savedTutoring.findMany({
+      where: { userId },
+      include: {
+        session: {
+          include: {
+            tutor: {
+              include: {
+                user: true,
+              },
+            },
+            course: true,
+          },
+        },
+      },
+    });
+  }
 }

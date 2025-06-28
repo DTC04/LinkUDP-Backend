@@ -191,6 +191,31 @@ export class AuthService {
     }
   }
 
+  async resendVerificationEmail(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      // Don't throw an error to prevent email enumeration attacks
+      return;
+    }
+
+    if (user.email_verified) {
+      // Optional: handle case where email is already verified
+      return;
+    }
+
+    const verificationToken = this.jwt.sign(
+      { userId: user.id },
+      { expiresIn: '1d', secret: process.env.JWT_SECRET },
+    );
+
+    await this.mailerService.sendMail({
+      to: user.email,
+      subject: 'Verifica tu correo electrónico',
+      text: `Hola ${user.full_name}, por favor verifica tu correo haciendo clic en el siguiente enlace:\n${process.env.FRONTEND_URL}/verify?token=${verificationToken}`,
+    });
+  }
+
 
   async assignRole(userId: number, role: Role.STUDENT | Role.TUTOR) {
     await this.prisma.user.update({

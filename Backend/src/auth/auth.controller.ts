@@ -157,4 +157,10 @@ export class AuthController {
       throw new UnauthorizedException('Token inválido o expirado.');
     }
   }
+
+  @Post('resend-verification')
+  async resendVerificationEmail(@Body('email') email: string) {
+    await this.authService.resendVerificationEmail(email);
+    return { message: 'Se ha reenviado un nuevo enlace de verificación.' };
+  }
 }
