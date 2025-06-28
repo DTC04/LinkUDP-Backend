@@ -145,7 +145,12 @@ let AuthService = class AuthService {
         });
         return { token, isNewUser, user };
     }
+<<<<<<< HEAD
         async forgotPassword(email) {
+=======
+<<<<<<< HEAD
+    async forgotPassword(email) {
+>>>>>>> 5fec84dab2290a5c7a7b45725507facdea7d0de6
         const user = await this.prisma.user.findUnique({ where: { email } });
         if (!user)
             return;
@@ -197,7 +202,11 @@ let AuthService = class AuthService {
             data: { password: hashedPassword },
         });
         return { message: 'Contraseña actualizada con éxito.' };
+<<<<<<< HEAD
     }
+=======
+=======
+>>>>>>> 5fec84dab2290a5c7a7b45725507facdea7d0de6
     async verifyEmailToken(token) {
         try {
             const payload = this.jwt.verify(token, { secret: process.env.JWT_SECRET });
@@ -225,6 +234,10 @@ let AuthService = class AuthService {
             subject: 'Verifica tu correo electrónico',
             text: `Hola ${user.full_name}, por favor verifica tu correo haciendo clic en el siguiente enlace:\n${process.env.FRONTEND_URL}/verify?token=${verificationToken}`,
         });
+<<<<<<< HEAD
+=======
+>>>>>>> 913936c99bd0943bc281d1d0c0047e5434fa602f
+>>>>>>> 5fec84dab2290a5c7a7b45725507facdea7d0de6
     }
     async assignRole(userId, role) {
         await this.prisma.user.update({

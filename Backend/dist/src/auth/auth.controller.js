@@ -20,10 +20,20 @@ const login_dto_1 = require("./dto/login.dto");
 const passport_1 = require("@nestjs/passport");
 const jwt_auth_guard_1 = require("./jwt-auth.guard");
 const get_user_decorator_1 = require("./get-user.decorator");
+<<<<<<< HEAD
 const common_2 = require("@nestjs/common");
 const forgot_password_dto_1 = require("./dto/forgot-password.dto");
 const public_decorator_1 = require("./public.decorator");
 const reset_password_dto_1 = require("./dto/reset-password.dto");
+=======
+<<<<<<< HEAD
+const forgot_password_dto_1 = require("./dto/forgot-password.dto");
+const public_decorator_1 = require("./public.decorator");
+const reset_password_dto_1 = require("./dto/reset-password.dto");
+=======
+const common_2 = require("@nestjs/common");
+>>>>>>> 913936c99bd0943bc281d1d0c0047e5434fa602f
+>>>>>>> 5fec84dab2290a5c7a7b45725507facdea7d0de6
 const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
