@@ -33,14 +33,16 @@ let TutoriasService = TutoriasService_1 = class TutoriasService {
             !createTutoriaDto.end_time) {
             throw new Error('Todos los campos son requeridos para publicar la tutoría.');
         }
+        const startTime = new Date(createTutoriaDto.start_time);
+        const sessionDate = new Date(Date.UTC(startTime.getUTCFullYear(), startTime.getUTCMonth(), startTime.getUTCDate()));
         return this.prisma.tutoringSession.create({
             data: {
                 tutorId: createTutoriaDto.tutorId,
                 courseId: createTutoriaDto.courseId,
                 title: createTutoriaDto.title,
                 description: createTutoriaDto.description,
-                date: new Date(createTutoriaDto.date),
-                start_time: new Date(createTutoriaDto.start_time),
+                date: sessionDate,
+                start_time: startTime,
                 end_time: new Date(createTutoriaDto.end_time),
                 location: createTutoriaDto.location,
                 notes: createTutoriaDto.notes,
@@ -134,13 +136,15 @@ let TutoriasService = TutoriasService_1 = class TutoriasService {
         return tutoria;
     }
     async update(id, updateTutoriaDto) {
-        const { date, start_time, end_time, ...restOfDto } = updateTutoriaDto;
+        const { start_time, end_time, date, ...restOfDto } = updateTutoriaDto;
         const dataToUpdate = { ...restOfDto };
-        if (date) {
-            dataToUpdate.date = new Date(date);
-        }
         if (start_time) {
-            dataToUpdate.start_time = new Date(start_time);
+            const newStartTime = new Date(start_time);
+            dataToUpdate.start_time = newStartTime;
+            dataToUpdate.date = new Date(Date.UTC(newStartTime.getUTCFullYear(), newStartTime.getUTCMonth(), newStartTime.getUTCDate()));
+        }
+        else if (date) {
+            dataToUpdate.date = new Date(date);
         }
         if (end_time) {
             dataToUpdate.end_time = new Date(end_time);
@@ -297,10 +301,125 @@ let TutoriasService = TutoriasService_1 = class TutoriasService {
             throw error;
         }
     }
+    async getRecommendedTutorings(userId) {
+        console.log("📌 Obteniendo recomendaciones para el userId:", userId);
+        const where = {
+            status: { in: ['AVAILABLE', 'PENDING'] },
+            start_time: { gt: new Date() },
+        };
+        const orderBy = [];
+        if (userId) {
+            const pastBookings = await this.prisma.booking.findMany({
+                where: {
+                    studentProfile: { user: { id: userId } },
+                    status: { in: ['CONFIRMED'] },
+                },
+                include: {
+                    session: {
+                        select: {
+                            courseId: true,
+                            tutorId: true,
+                        },
+                    },
+                },
+            });
+            const courseIds = [...new Set(pastBookings.map(b => b.session.courseId))];
+            const tutorIds = [...new Set(pastBookings.map(b => b.session.tutorId))];
+            where.OR = [
+                { courseId: { in: courseIds } },
+                { tutorId: { in: tutorIds } },
+            ];
+        }
+        else {
+            orderBy.push({ bookings: { _count: 'desc' } });
+        }
+        return this.prisma.tutoringSession.findMany({
+            where,
+            include: {
+                course: true,
+                tutor: { include: { user: true } },
+            },
+            orderBy,
+            take: 6,
+        });
+    }
+    async contactTutor(sessionId, studentUserId, message) {
+        const session = await this.prisma.tutoringSession.findUnique({
+            where: { id: sessionId },
+            include: {
+                course: true,
+                tutor: { include: { user: true } },
+            },
+        });
+        if (!session) {
+            throw new common_1.NotFoundException('Sesión de tutoría no encontrada.');
+        }
+        const studentProfile = await this.prisma.studentProfile.findFirst({
+            where: { userId: studentUserId },
+            include: { user: true },
+        });
+        if (!studentProfile) {
+            throw new common_1.NotFoundException('Perfil de estudiante no encontrado.');
+        }
+        const subject = `Mensaje sobre tu tutoría de ${session.course.name}`;
+        const text = `
+Hola ${session.tutor.user.full_name},
+
+El estudiante ${studentProfile.user.full_name} (${studentProfile.user.email}) te ha enviado un mensaje sobre la tutoría de ${session.course.name.toUpperCase()} agendada para ${session.date.toLocaleDateString()}:
+
+"${message}"
+
+¡Por favor responde a la brevedad para coordinar!
+
+— Plataforma LinkUDP
+`;
+        await this.mailerService.sendMail({
+            to: session.tutor.user.email,
+            subject,
+            text,
+        });
+        this.logger.log(`Correo enviado al tutor ${session.tutor.user.email} desde el estudiante ${studentProfile.user.email} sobre la sesión ${session.id}`);
+    }
+    async save(sessionId, userId) {
+        return this.prisma.savedTutoring.create({
+            data: {
+                sessionId,
+                userId,
+            },
+        });
+    }
+    async unsave(sessionId, userId) {
+        return this.prisma.savedTutoring.delete({
+            where: {
+                userId_sessionId: {
+                    userId,
+                    sessionId,
+                },
+            },
+        });
+    }
+    async getSaved(userId) {
+        return this.prisma.savedTutoring.findMany({
+            where: { userId },
+            include: {
+                session: {
+                    include: {
+                        tutor: {
+                            include: {
+                                user: true,
+                            },
+                        },
+                        course: true,
+                    },
+                },
+            },
+        });
+    }
 };
 exports.TutoriasService = TutoriasService;
 exports.TutoriasService = TutoriasService = TutoriasService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService, mailer_1.MailerService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        mailer_1.MailerService])
 ], TutoriasService);
 //# sourceMappingURL=tutorias.service.js.map

@@ -18,6 +18,9 @@ const tutorias_service_1 = require("./tutorias.service");
 const create_tutoria_dto_1 = require("./dto/create-tutoria.dto");
 const update_tutoria_dto_1 = require("./dto/update-tutoria.dto");
 const swagger_1 = require("@nestjs/swagger");
+const passport_1 = require("@nestjs/passport");
+const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
+const get_user_decorator_1 = require("../auth/get-user.decorator");
 let TutoriasController = class TutoriasController {
     tutoriasService;
     constructor(tutoriasService) {
@@ -38,6 +41,10 @@ let TutoriasController = class TutoriasController {
         }
         return tutorias;
     }
+    async getRecommended(user) {
+        console.log("🧠 Usuario recibido:", user);
+        return this.tutoriasService.getRecommendedTutorings(user.id);
+    }
     async findOne(id) {
         const tutoria = await this.tutoriasService.findOne(id);
         if (!tutoria) {
@@ -50,6 +57,19 @@ let TutoriasController = class TutoriasController {
     }
     async remove(id) {
         return this.tutoriasService.remove(id);
+    }
+    async contactTutor(sessionId, message, req) {
+        await this.tutoriasService.contactTutor(sessionId, req.user.id, message);
+        return { success: true };
+    }
+    async save(id, user) {
+        return this.tutoriasService.save(id, user.id);
+    }
+    async unsave(id, user) {
+        return this.tutoriasService.unsave(id, user.id);
+    }
+    async getSaved(user) {
+        return this.tutoriasService.getSaved(user.id);
     }
 };
 exports.TutoriasController = TutoriasController;
@@ -84,6 +104,14 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], TutoriasController.prototype, "findAll", null);
 __decorate([
+    (0, common_1.Get)('/recomendadas'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __param(0, (0, get_user_decorator_1.GetUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], TutoriasController.prototype, "getRecommended", null);
+__decorate([
     (0, common_1.Get)(':id'),
     (0, swagger_1.ApiOperation)({ summary: 'Obtener los detalles de una tutoría específica' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Detalles de la tutoría obtenidos exitosamente.' }),
@@ -114,6 +142,47 @@ __decorate([
     __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", Promise)
 ], TutoriasController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Post)(':sessionId/contact'),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
+    (0, swagger_1.ApiOperation)({ summary: 'Contactar al tutor de una tutoría (envía correo)' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Correo enviado al tutor exitosamente.' }),
+    __param(0, (0, common_1.Param)('sessionId', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Body)('message')),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, String, Object]),
+    __metadata("design:returntype", Promise)
+], TutoriasController.prototype, "contactTutor", null);
+__decorate([
+    (0, common_1.Post)(':id/save'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Guardar una tutoría' }),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, get_user_decorator_1.GetUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:returntype", Promise)
+], TutoriasController.prototype, "save", null);
+__decorate([
+    (0, common_1.Delete)(':id/save'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Eliminar una tutoría guardada' }),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, get_user_decorator_1.GetUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:returntype", Promise)
+], TutoriasController.prototype, "unsave", null);
+__decorate([
+    (0, common_1.Get)('me/saved'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Obtener las tutorías guardadas por el usuario' }),
+    __param(0, (0, get_user_decorator_1.GetUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], TutoriasController.prototype, "getSaved", null);
 exports.TutoriasController = TutoriasController = __decorate([
     (0, swagger_1.ApiTags)('tutorias'),
     (0, common_1.Controller)('tutorias'),

@@ -31,4 +31,5 @@ export declare class AvailabilityService {
         end_time: Date;
         day_of_week: import(".prisma/client").$Enums.DayOfWeek;
     }>;
+    blockAvailabilityForSession(tutorId: number, start: Date, end: Date): Promise<void>;
 }

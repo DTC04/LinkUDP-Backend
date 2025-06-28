@@ -52,6 +52,7 @@ model User {
   UserActivity           UserActivity[]
   Notification           Notification[]
   NotificationPreference NotificationPreference?
+  savedTutorings         SavedTutoring[]
 
   @@map("User") // Asegúrate que el nombre de la tabla sea consistente
 }
@@ -149,6 +150,8 @@ model AvailabilityBlock {
   day_of_week DayOfWeek
   start_time  DateTime
   end_time    DateTime
+
+  @@index([tutorId, start_time, end_time])
 }
 
 model TutoringSession {
@@ -170,6 +173,7 @@ model TutoringSession {
 
   bookings  Booking[]
   feedbacks Feedback[]
+  savedBy   SavedTutoring[]
 }
 
 model Booking {
@@ -244,4 +248,15 @@ model NotificationPreference {
   inapp_on_booking      Boolean @default(true)
   push_on_booking       Boolean @default(true)
   daily_summary         Boolean @default(false)
+}
+
+model SavedTutoring {
+  id        Int             @id @default(autoincrement())
+  user      User            @relation(fields: [userId], references: [id])
+  userId    Int
+  session   TutoringSession @relation(fields: [sessionId], references: [id])
+  sessionId Int
+  createdAt DateTime        @default(now())
+
+  @@unique([userId, sessionId])
 }

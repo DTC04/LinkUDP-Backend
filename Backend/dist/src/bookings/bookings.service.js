@@ -14,6 +14,7 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const mailer_1 = require("@nestjs-modules/mailer");
+const availability_service_1 = require("../availability/availability.service");
 let BookingService = class BookingService {
     mailerService;
     prisma;
@@ -31,9 +32,11 @@ exports.BookingService = BookingService = __decorate([
 let BookingsService = class BookingsService {
     prisma;
     mailerService;
-    constructor(prisma, mailerService) {
+    availabilityService;
+    constructor(prisma, mailerService, availabilityService) {
         this.prisma = prisma;
         this.mailerService = mailerService;
+        this.availabilityService = availabilityService;
     }
     async findStudentBookings(studentProfileId, statuses, upcoming, past) {
         const where = {
@@ -231,6 +234,16 @@ let BookingsService = class BookingsService {
                 where: { id: booking.sessionId },
                 data: { status: client_1.BookingStatus.CONFIRMED },
             });
+            const start = new Date(booking.session.start_time);
+            const end = new Date(booking.session.end_time);
+            const deleted = await tx.availabilityBlock.deleteMany({
+                where: {
+                    tutorId: tutorProfileId,
+                    start_time: booking.session.start_time,
+                    end_time: booking.session.end_time,
+                },
+            });
+            console.log(`Bloques eliminados: ${deleted.count}`);
         });
     }
     async confirmBookingBySession(sessionId, tutorProfileId) {
@@ -263,6 +276,6 @@ let BookingsService = class BookingsService {
 exports.BookingsService = BookingsService;
 exports.BookingsService = BookingsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService, mailer_1.MailerService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService, mailer_1.MailerService, availability_service_1.AvailabilityService])
 ], BookingsService);
 //# sourceMappingURL=bookings.service.js.map
