@@ -10,14 +10,21 @@ import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { MailerService } from '@nestjs-modules/mailer';
+<<<<<<< HEAD
 
+=======
+>>>>>>> 913936c99bd0943bc281d1d0c0047e5434fa602f
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
+<<<<<<< HEAD
     private readonly mailerService: MailerService,
+=======
+    private mailerService: MailerService,
+>>>>>>> 913936c99bd0943bc281d1d0c0047e5434fa602f
   ) {}
 
   async register(dto: RegisterDto) {
@@ -37,6 +44,7 @@ export class AuthService {
         email: dto.email,
         password: hashedPassword,
         role: dto.role,
+        email_verified: false,
       },
     });
 
@@ -69,6 +77,18 @@ export class AuthService {
       });
     }
 
+   
+    const verificationToken = this.jwt.sign(
+      { userId: user.id },
+      { expiresIn: '1d', secret: process.env.JWT_SECRET },
+    );
+
+    await this.mailerService.sendMail({
+      to: user.email,
+      subject: 'Verifica tu correo electrónico',
+      text: `Hola ${user.full_name}, por favor verifica tu correo haciendo clic en el siguiente enlace:\n${process.env.FRONTEND_URL}/verify?token=${verificationToken}`,
+    });    
+
     const { password, ...safeUser } = user;
 
     const token = this.jwt.sign({
@@ -77,7 +97,8 @@ export class AuthService {
       role: user.role,
     });
 
-    return { user: safeUser, access_token: token };
+    return { user: safeUser, access_token: token, 
+      message: 'Te hemos enviado un correo para verificar tu cuenta.', };
   }
 
   async login(dto: LoginDto) {
@@ -88,6 +109,10 @@ export class AuthService {
     if (!user || !user.password) {
       await this.logAttempt(null, false);
       throw new UnauthorizedException('Credenciales inválidas');
+    }
+
+    if (!user.email_verified) {
+      throw new UnauthorizedException('Debes verificar tu correo electrónico antes de iniciar sesión.');
     }
 
     const isBlocked = await this.isUserTemporarilyBlocked(user.id);
@@ -123,7 +148,8 @@ export class AuthService {
         data: {
           email,
           full_name: name,
-          role: 'STUDENT', // Default role for new Google sign-ups
+          role: 'STUDENT',
+          email_verified: true,
         },
       });
 
@@ -160,9 +186,50 @@ export class AuthService {
     return { token, isNewUser, user };
   }
   
+<<<<<<< HEAD
   
   async forgotPassword(email: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
+=======
+  async verifyEmailToken(token: string) {
+    try {
+      const payload = this.jwt.verify(token, { secret: process.env.JWT_SECRET });
+      await this.prisma.user.update({
+        where: { id: payload.userId },
+        data: { email_verified: true },
+      });
+      return payload;
+    } catch (error) {
+      throw new UnauthorizedException('Token inválido o expirado.');
+    }
+  }
+
+  async resendVerificationEmail(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      // Don't throw an error to prevent email enumeration attacks
+      return;
+    }
+
+    if (user.email_verified) {
+      // Optional: handle case where email is already verified
+      return;
+    }
+
+    const verificationToken = this.jwt.sign(
+      { userId: user.id },
+      { expiresIn: '1d', secret: process.env.JWT_SECRET },
+    );
+
+    await this.mailerService.sendMail({
+      to: user.email,
+      subject: 'Verifica tu correo electrónico',
+      text: `Hola ${user.full_name}, por favor verifica tu correo haciendo clic en el siguiente enlace:\n${process.env.FRONTEND_URL}/verify?token=${verificationToken}`,
+    });
+  }
+
+>>>>>>> 913936c99bd0943bc281d1d0c0047e5434fa602f
 
     // Por seguridad, no informamos si el usuario no existe
     if (!user) return;

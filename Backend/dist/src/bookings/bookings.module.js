@@ -12,12 +12,13 @@ const bookings_service_1 = require("./bookings.service");
 const bookings_controller_1 = require("./bookings.controller");
 const prisma_module_1 = require("../prisma/prisma.module");
 const auth_module_1 = require("../auth/auth.module");
+const availability_module_1 = require("../availability/availability.module");
 let BookingsModule = class BookingsModule {
 };
 exports.BookingsModule = BookingsModule;
 exports.BookingsModule = BookingsModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule, auth_module_1.AuthModule],
+        imports: [prisma_module_1.PrismaModule, auth_module_1.AuthModule, availability_module_1.AvailabilityModule],
         controllers: [bookings_controller_1.BookingsController],
         providers: [bookings_service_1.BookingsService],
     })

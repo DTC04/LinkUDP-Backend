@@ -8,7 +8,11 @@ import { MailerService } from '@nestjs-modules/mailer';
 @Injectable()
 export class TutoriasService {
   private readonly logger = new Logger(TutoriasService.name);
-  constructor(private prisma: PrismaService, private readonly mailerService: MailerService) {}
+
+  constructor(
+    private prisma: PrismaService,
+    private readonly mailerService: MailerService
+  ) {}
 
   async create(createTutoriaDto: CreateTutoriaDto): Promise<TutoringSession> {
     if (
@@ -23,14 +27,17 @@ export class TutoriasService {
       throw new Error('Todos los campos son requeridos para publicar la tutoría.');
     }
 
+    const startTime = new Date(createTutoriaDto.start_time);
+    const sessionDate = new Date(Date.UTC(startTime.getUTCFullYear(), startTime.getUTCMonth(), startTime.getUTCDate()));
+
     return this.prisma.tutoringSession.create({
       data: {
         tutorId: createTutoriaDto.tutorId,
         courseId: createTutoriaDto.courseId,
         title: createTutoriaDto.title,
         description: createTutoriaDto.description,
-        date: new Date(createTutoriaDto.date),
-        start_time: new Date(createTutoriaDto.start_time),
+        date: sessionDate,
+        start_time: startTime,
         end_time: new Date(createTutoriaDto.end_time),
         location: createTutoriaDto.location,
         notes: createTutoriaDto.notes,
@@ -62,12 +69,8 @@ export class TutoriasService {
         where.status = status as BookingStatus;
       }
     } else if (!tutorId) {
-      // For public view, show available, pending (booked), and confirmed tutorials
-      // The frontend will need to handle displaying these statuses appropriately 
-      // (e.g., disable booking for PENDING and CONFIRMED)
       where.status = { in: ['AVAILABLE', 'PENDING', 'CONFIRMED'] };
     }
-
 
     if (ramo) {
       where.course = {
@@ -95,9 +98,8 @@ export class TutoriasService {
         tutor: {
           include: {
             user: { 
-              select: { id: true, full_name: true, email: true, photo_url: true }, // Added id: true
+              select: { id: true, full_name: true, email: true, photo_url: true },
             }
-            
           }
         },
         course: true,
@@ -125,13 +127,12 @@ export class TutoriasService {
           include: {
             user: {
               select: {
-                id: true, // Added id: true
+                id: true,
                 full_name: true,
                 email: true, 
                 photo_url: true,
               }
             }
-            
           }
         },
         course: true, 
@@ -144,24 +145,41 @@ export class TutoriasService {
   }
 
   async update(id: number, updateTutoriaDto: UpdateTutoriaDto): Promise<TutoringSession> {
-    const { date, start_time, end_time, ...restOfDto } = updateTutoriaDto;
+    const { start_time, end_time, date, ...restOfDto } = updateTutoriaDto; // 'date' is explicitly extracted
     const dataToUpdate: Prisma.TutoringSessionUpdateInput = { ...restOfDto };
 
-    if (date) {
-      dataToUpdate.date = new Date(date);
-    }
     if (start_time) {
-      dataToUpdate.start_time = new Date(start_time);
+      const newStartTime = new Date(start_time);
+      dataToUpdate.start_time = newStartTime;
+      // Always derive 'date' from 'start_time' if 'start_time' is provided
+      dataToUpdate.date = new Date(Date.UTC(newStartTime.getUTCFullYear(), newStartTime.getUTCMonth(), newStartTime.getUTCDate()));
+    } else if (date) {
+      // This case is tricky. If only 'date' is provided without 'start_time',
+      // it implies changing the date part of the existing start_time.
+      // However, without knowing the existing start_time's time part, we can't accurately construct a new start_time.
+      // For now, we'll update 'date' directly if 'start_time' is not provided.
+      // This relies on the frontend sending 'date' as UTC midnight if it intends to change only the day.
+      // A more robust solution would require fetching the existing session to combine the new date with existing time,
+      // or disallowing 'date' updates without 'start_time'.
+      // For simplicity and to match previous partial logic:
+      dataToUpdate.date = new Date(date);
+      // WARNING: This might lead to date and start_time becoming out of sync if not handled carefully by the client.
+      // Ideally, client should always send start_time if the date changes.
     }
+
     if (end_time) {
       dataToUpdate.end_time = new Date(end_time);
     }
+
+    // If 'date' was in updateTutoriaDto but 'start_time' was not,
+    // and we updated dataToUpdate.date directly, we should log a warning or consider if this is desired.
+    // For now, the above logic prioritizes start_time for setting date, then falls back to dto.date if start_time is absent.
 
     try {
       const updatedTutoria = await this.prisma.tutoringSession.update({
         where: { id },
         data: dataToUpdate,
-        include: { // Include course for notification details
+        include: {
           course: true,
         }
       });
@@ -211,8 +229,7 @@ export class TutoriasService {
           if (shouldSendEmail) {
             try {
               const emailSubject = `Actualización de Tutoría: ${updatedTutoria.title}`;
-              // Using toLocaleString() for date/time consistency with BookingsService
-              const eventTime = new Date(updatedTutoria.start_time); // Ensure it's a Date object
+              const eventTime = new Date(updatedTutoria.start_time);
               const emailText = `Hola ${studentUser.full_name},\n\nLa tutoría "${updatedTutoria.title}" de la asignatura "${updatedTutoria.course.name}" ha sido actualizada.\nNuevos detalles:\nHorario: ${eventTime.toLocaleString()}\nDuración aproximada: ${(new Date(updatedTutoria.end_time).getTime() - eventTime.getTime()) / (1000 * 60)} minutos.\n\nPuedes ver los detalles en: ${process.env.FRONTEND_URL}/tutoring/${updatedTutoria.id}\n\nSaludos,\nEquipo LinkUDP`;
               
               await this.mailerService.sendMail({
@@ -244,7 +261,7 @@ export class TutoriasService {
     const tutoriaToDelete = await this.prisma.tutoringSession.findUnique({
       where: { id },
       include: {
-        course: true, // For notification details
+        course: true,
         bookings: {
           where: {
             status: { in: [BookingStatus.CONFIRMED, BookingStatus.PENDING] }
@@ -281,7 +298,7 @@ export class TutoriasService {
         await this.prisma.notification.create({
           data: {
             userId: studentUser.id,
-            type: 'TUTORIA_CANCELLED_BY_TUTOR', // More specific type
+            type: 'TUTORIA_CANCELLED_BY_TUTOR',
             payload: notificationPayload as unknown as Prisma.InputJsonValue,
           }
         });
@@ -293,8 +310,7 @@ export class TutoriasService {
         if (shouldSendEmailCancellation) {
            try {
             const emailSubject = `Cancelación de Tutoría: ${tutoriaToDelete.title}`;
-            // Using toLocaleString() for date/time consistency with BookingsService
-            const eventTimeCancelled = new Date(tutoriaToDelete.start_time); // Ensure it's a Date object
+            const eventTimeCancelled = new Date(tutoriaToDelete.start_time);
             const emailText = `Hola ${studentUser.full_name},\n\nLamentamos informarte que la tutoría "${tutoriaToDelete.title}" de la asignatura "${tutoriaToDelete.course.name}", programada para ${eventTimeCancelled.toLocaleString()}, ha sido cancelada por el tutor.\n\nSaludos,\nEquipo LinkUDP`;
 
             await this.mailerService.sendMail({
@@ -315,7 +331,6 @@ export class TutoriasService {
     });
     this.logger.log(`Bookings for session ${id} deleted before session deletion.`);
 
-
     try {
       return await this.prisma.tutoringSession.delete({
         where: { id },
@@ -326,5 +341,148 @@ export class TutoriasService {
       }
       throw error;
     }
+  }
+
+  async getRecommendedTutorings(userId?: number): Promise<TutoringSession[]> {
+    console.log("📌 Obteniendo recomendaciones para el userId:", userId);
+    const where: Prisma.TutoringSessionWhereInput = {
+      status: { in: ['AVAILABLE', 'PENDING'] },
+      start_time: { gt: new Date() },
+    };
+  
+    const orderBy: Prisma.TutoringSessionOrderByWithRelationInput[] = [];
+  
+    if (userId) {
+      const pastBookings = await this.prisma.booking.findMany({
+        where: {
+          studentProfile: { user: { id: userId } },
+          status: { in: ['CONFIRMED'] },
+        },
+        include: {
+          session: {
+            select: {
+              courseId: true,
+              tutorId: true,
+            },
+          },
+        },
+      });
+  
+      const courseIds = [...new Set(pastBookings.map(b => b.session.courseId))];
+      const tutorIds = [...new Set(pastBookings.map(b => b.session.tutorId))];
+      
+      where.OR = [
+        { courseId: { in: courseIds } },
+        { tutorId: { in: tutorIds } },
+      ];
+    } else {
+      orderBy.push({ bookings: { _count: 'desc' } });
+    }
+  
+    return this.prisma.tutoringSession.findMany({
+      where,
+      include: {
+        course: true,
+        tutor: { include: { user: true } },
+      },
+      orderBy,
+      take: 6,
+    });
+  }
+  
+
+
+
+
+  // ------------- 🚀 NUEVO MÉTODO: CONTACTAR TUTOR 🚀 -------------
+  async contactTutor(
+    sessionId: number,
+    studentUserId: number,
+    message: string
+  ): Promise<void> {
+    // 1. Buscar la sesión y los datos relacionados
+    const session = await this.prisma.tutoringSession.findUnique({
+      where: { id: sessionId },
+      include: {
+        course: true,
+        tutor: { include: { user: true } },
+      },
+    });
+
+    if (!session) {
+      throw new NotFoundException('Sesión de tutoría no encontrada.');
+    }
+
+    // 2. Buscar el perfil y usuario del estudiante
+    const studentProfile = await this.prisma.studentProfile.findFirst({
+      where: { userId: studentUserId },
+      include: { user: true },
+    });
+
+    if (!studentProfile) {
+      throw new NotFoundException('Perfil de estudiante no encontrado.');
+    }
+
+    // 3. Armar y enviar el correo
+    const subject = `Mensaje sobre tu tutoría de ${session.course.name}`;
+    const text = `
+Hola ${session.tutor.user.full_name},
+
+El estudiante ${studentProfile.user.full_name} (${studentProfile.user.email}) te ha enviado un mensaje sobre la tutoría de ${session.course.name.toUpperCase()} agendada para ${session.date.toLocaleDateString()}:
+
+"${message}"
+
+¡Por favor responde a la brevedad para coordinar!
+
+— Plataforma LinkUDP
+`;
+
+    await this.mailerService.sendMail({
+      to: session.tutor.user.email,
+      subject,
+      text,
+    });
+
+    this.logger.log(
+      `Correo enviado al tutor ${session.tutor.user.email} desde el estudiante ${studentProfile.user.email} sobre la sesión ${session.id}`,
+    );
+  }
+
+  async save(sessionId: number, userId: number) {
+    return this.prisma.savedTutoring.create({
+      data: {
+        sessionId,
+        userId,
+      },
+    });
+  }
+
+  async unsave(sessionId: number, userId: number) {
+    return this.prisma.savedTutoring.delete({
+      where: {
+        userId_sessionId: {
+          userId,
+          sessionId,
+        },
+      },
+    });
+  }
+
+  async getSaved(userId: number) {
+    return this.prisma.savedTutoring.findMany({
+      where: { userId },
+      include: {
+        session: {
+          include: {
+            tutor: {
+              include: {
+                user: true,
+              },
+            },
+            course: true,
+          },
+        },
+      },
+    });
   }
 }

@@ -22,6 +22,7 @@ export declare class AuthService {
             updated_at: Date;
         };
         access_token: string;
+        message: string;
     }>;
     login(dto: LoginDto): Promise<{
         user: {
@@ -43,10 +44,15 @@ export declare class AuthService {
         isNewUser: boolean;
         user: any;
     }>;
+<<<<<<< HEAD
     forgotPassword(email: string): Promise<void>;
     resetPassword(token: string, newPassword: string): Promise<{
         message: string;
     }>;
+=======
+    verifyEmailToken(token: string): Promise<any>;
+    resendVerificationEmail(email: string): Promise<void>;
+>>>>>>> 913936c99bd0943bc281d1d0c0047e5434fa602f
     assignRole(userId: number, role: Role.STUDENT | Role.TUTOR): Promise<void>;
     private logAttempt;
     private isUserTemporarilyBlocked;

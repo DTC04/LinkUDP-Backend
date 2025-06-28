@@ -18,9 +18,13 @@ import { LoginDto } from './dto/login.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { GetUser } from './get-user.decorator';
+<<<<<<< HEAD
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { Public } from './public.decorator';
 import { ResetPasswordDto } from './dto/reset-password.dto'
+=======
+import { Query } from '@nestjs/common';
+>>>>>>> 913936c99bd0943bc281d1d0c0047e5434fa602f
 
 const cookieOptions = {
   httpOnly: true,
@@ -173,5 +177,21 @@ async resetPassword(@Body() body: ResetPasswordDto) {
   getMe(@GetUser() user: any) {
     const { password, ...safeUser } = user;
     return safeUser;
+  }
+
+  @Get('verify')
+  async verifyEmail(@Query('token') token: string) {
+    try {
+      const payload = await this.authService.verifyEmailToken(token);
+      return { message: 'Correo verificado con éxito.' };
+    } catch (error) {
+      throw new UnauthorizedException('Token inválido o expirado.');
+    }
+  }
+
+  @Post('resend-verification')
+  async resendVerificationEmail(@Body('email') email: string) {
+    await this.authService.resendVerificationEmail(email);
+    return { message: 'Se ha reenviado un nuevo enlace de verificación.' };
   }
 }

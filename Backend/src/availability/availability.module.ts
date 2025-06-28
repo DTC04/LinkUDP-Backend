@@ -6,5 +6,6 @@ import { PrismaService } from '../prisma/prisma.service';
 @Module({
   controllers: [AvailabilityController],
   providers: [AvailabilityService, PrismaService],
+  exports: [AvailabilityService],
 })
 export class AvailabilityModule {}
