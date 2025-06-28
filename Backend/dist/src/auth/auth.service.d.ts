@@ -2,10 +2,12 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto, Role } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
+import { MailerService } from '@nestjs-modules/mailer';
 export declare class AuthService {
     private prisma;
     private jwt;
-    constructor(prisma: PrismaService, jwt: JwtService);
+    private readonly mailerService;
+    constructor(prisma: PrismaService, jwt: JwtService, mailerService: MailerService);
     register(dto: RegisterDto): Promise<{
         user: {
             id: number;
@@ -40,6 +42,10 @@ export declare class AuthService {
         token: string;
         isNewUser: boolean;
         user: any;
+    }>;
+    forgotPassword(email: string): Promise<void>;
+    resetPassword(token: string, newPassword: string): Promise<{
+        message: string;
     }>;
     assignRole(userId: number, role: Role.STUDENT | Role.TUTOR): Promise<void>;
     private logAttempt;

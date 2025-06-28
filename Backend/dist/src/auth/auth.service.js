@@ -15,12 +15,15 @@ const prisma_service_1 = require("../prisma/prisma.service");
 const register_dto_1 = require("./dto/register.dto");
 const bcrypt = require("bcrypt");
 const jwt_1 = require("@nestjs/jwt");
+const mailer_1 = require("@nestjs-modules/mailer");
 let AuthService = class AuthService {
     prisma;
     jwt;
-    constructor(prisma, jwt) {
+    mailerService;
+    constructor(prisma, jwt, mailerService) {
         this.prisma = prisma;
         this.jwt = jwt;
+        this.mailerService = mailerService;
     }
     async register(dto) {
         const userExists = await this.prisma.user.findUnique({
@@ -130,6 +133,59 @@ let AuthService = class AuthService {
         });
         return { token, isNewUser, user };
     }
+    async forgotPassword(email) {
+        const user = await this.prisma.user.findUnique({ where: { email } });
+        if (!user)
+            return;
+        const token = this.jwt.sign({ email }, { expiresIn: '15m', secret: process.env.JWT_FORGOT_PASSWORD });
+        const resetUrl = `http://localhost:3001/reset-password?token=${token}`;
+        await this.mailerService.sendMail({
+            to: email,
+            subject: 'Restablece tu contraseña',
+            html: `
+    <h2>Recuperación de contraseña</h2>
+    <p>Haz clic en el botón para restablecer tu contraseña:</p>
+    <a href="${resetUrl}" style="
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #0ea5e9;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+    ">
+      Restablecer contraseña
+    </a>
+    <p style="font-size: 12px; color: #666; margin-top: 20px;">
+      Si no solicitaste este cambio, puedes ignorar este mensaje.<br/>
+      Este enlace expirará en 15 minutos.
+    </p>
+  `,
+        });
+    }
+    async resetPassword(token, newPassword) {
+        let payload;
+        try {
+            payload = this.jwt.verify(token, {
+                secret: process.env.JWT_FORGOT_PASSWORD,
+            });
+        }
+        catch (err) {
+            throw new Error('El token es inválido o ha expirado.');
+        }
+        const user = await this.prisma.user.findUnique({
+            where: { email: payload.email },
+        });
+        if (!user) {
+            throw new Error('Usuario no encontrado.');
+        }
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await this.prisma.user.update({
+            where: { email: payload.email },
+            data: { password: hashedPassword },
+        });
+        return { message: 'Contraseña actualizada con éxito.' };
+    }
     async assignRole(userId, role) {
         await this.prisma.user.update({
             where: { id: userId },
@@ -190,6 +246,7 @@ exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        jwt_1.JwtService])
+        jwt_1.JwtService,
+        mailer_1.MailerService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

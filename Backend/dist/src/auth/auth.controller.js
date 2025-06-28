@@ -20,6 +20,9 @@ const login_dto_1 = require("./dto/login.dto");
 const passport_1 = require("@nestjs/passport");
 const jwt_auth_guard_1 = require("./jwt-auth.guard");
 const get_user_decorator_1 = require("./get-user.decorator");
+const forgot_password_dto_1 = require("./dto/forgot-password.dto");
+const public_decorator_1 = require("./public.decorator");
+const reset_password_dto_1 = require("./dto/reset-password.dto");
 const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -51,6 +54,22 @@ let AuthController = class AuthController {
     async logout(res) {
         res.clearCookie('access_token', cookieOptions);
         return { message: 'Logout exitoso' };
+    }
+    async forgotPassword(body) {
+        try {
+            await this.authService.forgotPassword(body.email);
+        }
+        catch (err) {
+            throw new common_1.HttpException('Error al enviar el correo', 500);
+        }
+    }
+    async resetPassword(body) {
+        try {
+            await this.authService.resetPassword(body.token, body.password);
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message || 'Error al restablecer la contraseña', 400);
+        }
     }
     async googleAuth() {
     }
@@ -127,6 +146,23 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "logout", null);
+__decorate([
+    (0, common_1.Post)('forgot-password'),
+    (0, public_decorator_1.Public)(),
+    (0, common_1.HttpCode)(200),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [forgot_password_dto_1.ForgotPasswordDto]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "forgotPassword", null);
+__decorate([
+    (0, common_1.Post)('reset-password'),
+    (0, public_decorator_1.Public)(),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [reset_password_dto_1.ResetPasswordDto]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "resetPassword", null);
 __decorate([
     (0, common_1.Get)('google'),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)('google')),

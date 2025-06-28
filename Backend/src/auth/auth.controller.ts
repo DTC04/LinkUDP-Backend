@@ -8,7 +8,8 @@ import {
   HttpException,
   Get,
   Req,
-  UseGuards,
+  UseGuards, 
+  HttpCode, 
 } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
@@ -17,6 +18,9 @@ import { LoginDto } from './dto/login.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { GetUser } from './get-user.decorator';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { Public } from './public.decorator';
+import { ResetPasswordDto } from './dto/reset-password.dto'
 
 const cookieOptions = {
   httpOnly: true,
@@ -61,6 +65,30 @@ export class AuthController {
     res.clearCookie('access_token', cookieOptions);
     return { message: 'Logout exitoso' };
   }
+
+// este es para solicitar el correo
+  @Post('forgot-password')
+  @Public()
+  @HttpCode(200)
+  async forgotPassword(@Body() body: ForgotPasswordDto) {
+    try {
+      await this.authService.forgotPassword(body.email);
+    } catch (err) {
+      throw new HttpException('Error al enviar el correo', 500);
+    }
+  }
+
+//este para resetear la contraseña
+@Post('reset-password')
+@Public()
+async resetPassword(@Body() body: ResetPasswordDto) {
+  try {
+    await this.authService.resetPassword(body.token, body.password);
+  } catch (err) {
+    throw new HttpException(err.message || 'Error al restablecer la contraseña', 400);
+  }
+}
+
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
