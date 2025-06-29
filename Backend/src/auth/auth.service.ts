@@ -10,13 +10,21 @@ import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { MailerService } from '@nestjs-modules/mailer';
+<<<<<<< HEAD
+
+=======
+>>>>>>> 913936c99bd0943bc281d1d0c0047e5434fa602f
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
+<<<<<<< HEAD
+    private readonly mailerService: MailerService,
+=======
     private mailerService: MailerService,
+>>>>>>> 913936c99bd0943bc281d1d0c0047e5434fa602f
   ) {}
 
   async register(dto: RegisterDto) {
@@ -178,6 +186,11 @@ export class AuthService {
     return { token, isNewUser, user };
   }
   
+<<<<<<< HEAD
+  
+  async forgotPassword(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+=======
   async verifyEmailToken(token: string) {
     try {
       const payload = this.jwt.verify(token, { secret: process.env.JWT_SECRET });
@@ -216,7 +229,76 @@ export class AuthService {
     });
   }
 
+>>>>>>> 913936c99bd0943bc281d1d0c0047e5434fa602f
 
+    // Por seguridad, no informamos si el usuario no existe
+    if (!user) return;
+
+    const token = this.jwt.sign(
+      { email },
+      { expiresIn: '15m', secret: process.env.JWT_FORGOT_PASSWORD } // Expira en 15 minutos
+    );
+//modificar una vez este levantado el servicio
+    const resetUrl = `http://localhost:3001/reset-password?token=${token}`;
+
+   await this.mailerService.sendMail({
+  to: email,
+  subject: 'Restablece tu contraseña',
+  html: `
+    <h2>Recuperación de contraseña</h2>
+    <p>Haz clic en el botón para restablecer tu contraseña:</p>
+    <a href="${resetUrl}" style="
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #0ea5e9;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+    ">
+      Restablecer contraseña
+    </a>
+    <p style="font-size: 12px; color: #666; margin-top: 20px;">
+      Si no solicitaste este cambio, puedes ignorar este mensaje.<br/>
+      Este enlace expirará en 15 minutos.
+    </p>
+  `,
+});
+  }
+
+async resetPassword(token: string, newPassword: string) {
+  let payload: any;
+
+  try {
+    payload = this.jwt.verify(token, {
+      secret: process.env.JWT_FORGOT_PASSWORD,
+    });
+  } catch (err) {
+    throw new Error('El token es inválido o ha expirado.');
+  }
+
+  const user = await this.prisma.user.findUnique({
+    where: { email: payload.email },
+  });
+
+  if (!user) {
+    throw new Error('Usuario no encontrado.');
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  await this.prisma.user.update({
+    where: { email: payload.email },
+    data: { password: hashedPassword },
+  });
+
+  return { message: 'Contraseña actualizada con éxito.' };
+}
+
+
+
+
+  
   async assignRole(userId: number, role: Role.STUDENT | Role.TUTOR) {
     await this.prisma.user.update({
       where: { id: userId },

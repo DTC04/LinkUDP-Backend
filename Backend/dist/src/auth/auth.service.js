@@ -145,6 +145,68 @@ let AuthService = class AuthService {
         });
         return { token, isNewUser, user };
     }
+<<<<<<< HEAD
+        async forgotPassword(email) {
+=======
+<<<<<<< HEAD
+    async forgotPassword(email) {
+>>>>>>> 5fec84dab2290a5c7a7b45725507facdea7d0de6
+        const user = await this.prisma.user.findUnique({ where: { email } });
+        if (!user)
+            return;
+        const token = this.jwt.sign({ email }, { expiresIn: '15m', secret: process.env.JWT_FORGOT_PASSWORD });
+        const resetUrl = `http://localhost:3001/reset-password?token=${token}`;
+        await this.mailerService.sendMail({
+            to: email,
+            subject: 'Restablece tu contraseña',
+            html: `
+    <h2>Recuperación de contraseña</h2>
+    <p>Haz clic en el botón para restablecer tu contraseña:</p>
+    <a href="${resetUrl}" style="
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #0ea5e9;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+    ">
+      Restablecer contraseña
+    </a>
+    <p style="font-size: 12px; color: #666; margin-top: 20px;">
+      Si no solicitaste este cambio, puedes ignorar este mensaje.<br/>
+      Este enlace expirará en 15 minutos.
+    </p>
+  `,
+        });
+    }
+    async resetPassword(token, newPassword) {
+        let payload;
+        try {
+            payload = this.jwt.verify(token, {
+                secret: process.env.JWT_FORGOT_PASSWORD,
+            });
+        }
+        catch (err) {
+            throw new Error('El token es inválido o ha expirado.');
+        }
+        const user = await this.prisma.user.findUnique({
+            where: { email: payload.email },
+        });
+        if (!user) {
+            throw new Error('Usuario no encontrado.');
+        }
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await this.prisma.user.update({
+            where: { email: payload.email },
+            data: { password: hashedPassword },
+        });
+        return { message: 'Contraseña actualizada con éxito.' };
+<<<<<<< HEAD
+    }
+=======
+=======
+>>>>>>> 5fec84dab2290a5c7a7b45725507facdea7d0de6
     async verifyEmailToken(token) {
         try {
             const payload = this.jwt.verify(token, { secret: process.env.JWT_SECRET });
@@ -172,6 +234,10 @@ let AuthService = class AuthService {
             subject: 'Verifica tu correo electrónico',
             text: `Hola ${user.full_name}, por favor verifica tu correo haciendo clic en el siguiente enlace:\n${process.env.FRONTEND_URL}/verify?token=${verificationToken}`,
         });
+<<<<<<< HEAD
+=======
+>>>>>>> 913936c99bd0943bc281d1d0c0047e5434fa602f
+>>>>>>> 5fec84dab2290a5c7a7b45725507facdea7d0de6
     }
     async assignRole(userId, role) {
         await this.prisma.user.update({

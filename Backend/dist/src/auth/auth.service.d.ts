@@ -6,7 +6,15 @@ import { MailerService } from '@nestjs-modules/mailer';
 export declare class AuthService {
     private prisma;
     private jwt;
+<<<<<<< HEAD
+    private readonly mailerService;
+=======
+<<<<<<< HEAD
+    private readonly mailerService;
+=======
     private mailerService;
+>>>>>>> 913936c99bd0943bc281d1d0c0047e5434fa602f
+>>>>>>> 5fec84dab2290a5c7a7b45725507facdea7d0de6
     constructor(prisma: PrismaService, jwt: JwtService, mailerService: MailerService);
     register(dto: RegisterDto): Promise<{
         user: {
@@ -44,8 +52,23 @@ export declare class AuthService {
         isNewUser: boolean;
         user: any;
     }>;
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 5fec84dab2290a5c7a7b45725507facdea7d0de6
+    forgotPassword(email: string): Promise<void>;
+    resetPassword(token: string, newPassword: string): Promise<{
+        message: string;
+    }>;
+<<<<<<< HEAD
     verifyEmailToken(token: string): Promise<any>;
     resendVerificationEmail(email: string): Promise<void>;
+=======
+=======
+    verifyEmailToken(token: string): Promise<any>;
+    resendVerificationEmail(email: string): Promise<void>;
+>>>>>>> 913936c99bd0943bc281d1d0c0047e5434fa602f
+>>>>>>> 5fec84dab2290a5c7a7b45725507facdea7d0de6
     assignRole(userId: number, role: Role.STUDENT | Role.TUTOR): Promise<void>;
     private logAttempt;
     private isUserTemporarilyBlocked;

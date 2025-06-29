@@ -2,6 +2,8 @@ import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto, Role } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 export declare class AuthController {
     private readonly authService;
     constructor(authService: AuthService);
@@ -39,6 +41,8 @@ export declare class AuthController {
     logout(res: Response): Promise<{
         message: string;
     }>;
+    forgotPassword(body: ForgotPasswordDto): Promise<void>;
+    resetPassword(body: ResetPasswordDto): Promise<void>;
     googleAuth(): Promise<void>;
     googleRedirect(req: Request & {
         user?: any;
