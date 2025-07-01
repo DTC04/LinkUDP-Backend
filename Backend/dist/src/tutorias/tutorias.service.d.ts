@@ -82,4 +82,15 @@ export declare class TutoriasService {
         sessionId: number;
         createdAt: Date;
     })[]>;
+    getStudentsByTutoriaId(tutoriaId: string): Promise<{
+        id: number;
+        name: string;
+        email: string;
+        rating: number;
+        averageRating: number;
+        hasBeenRated: boolean;
+    }[]>;
+    rateStudent(sessionId: number, studentId: number, rating: number, tutorUserId: number): Promise<{
+        success: boolean;
+    }>;
 }

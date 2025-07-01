@@ -88,6 +88,8 @@ model StudentProfile {
   bookings       Booking[]
   feedbacks      Feedback[] // Estudiante que da feedback
   favoriteTutors FavoriteTutor[]
+  ratings StudentRating[]
+
 
   @@map("StudentProfile")
 }
@@ -116,6 +118,7 @@ model TutorProfile {
   availability     AvailabilityBlock[]
   tutoringSessions TutoringSession[]
   favoritedBy      FavoriteTutor[]
+  ratingsGiven StudentRating[]
 
   @@map("TutorProfile")
 }
@@ -174,6 +177,8 @@ model TutoringSession {
   bookings  Booking[]
   feedbacks Feedback[]
   savedBy   SavedTutoring[]
+  studentRatings StudentRating[]
+
 }
 
 model Booking {
@@ -209,6 +214,22 @@ model Feedback {
   is_public  Boolean         @default(true)
   created_at DateTime        @default(now())
 }
+
+model StudentRating {
+  id         Int             @id @default(autoincrement())
+  session    TutoringSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId  Int
+  student    StudentProfile  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId  Int
+  tutor      TutorProfile    @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+  tutorId    Int
+  rating     Int
+  comment    String?
+  created_at DateTime        @default(now())
+
+  @@unique([sessionId, studentId, tutorId])
+}
+
 
 model FavoriteTutor {
   id               Int            @id @default(autoincrement())

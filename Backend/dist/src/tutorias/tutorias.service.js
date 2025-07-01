@@ -415,6 +415,72 @@ El estudiante ${studentProfile.user.full_name} (${studentProfile.user.email}) te
             },
         });
     }
+    async getStudentsByTutoriaId(tutoriaId) {
+        const sessionId = Number(tutoriaId);
+        if (isNaN(sessionId)) {
+            throw new common_1.NotFoundException('ID de tutoría inválido.');
+        }
+        const bookings = await this.prisma.booking.findMany({
+            where: { sessionId },
+            include: {
+                studentProfile: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                full_name: true,
+                                email: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        const ratings = await this.prisma.studentRating.findMany({
+            where: { sessionId },
+            select: { studentId: true, rating: true },
+        });
+        return Promise.all(bookings.map(async (b) => {
+            const ratingRecord = ratings.find(r => r.studentId === b.studentProfile.id);
+            const allRatings = await this.prisma.studentRating.findMany({
+                where: { studentId: b.studentProfile.id },
+                select: { rating: true },
+            });
+            const averageRating = allRatings.length > 0
+                ? allRatings.reduce((sum, r) => sum + r.rating, 0) / allRatings.length
+                : 0;
+            return {
+                id: b.studentProfile.id,
+                name: b.studentProfile.user.full_name,
+                email: b.studentProfile.user.email,
+                rating: ratingRecord?.rating ?? 0,
+                averageRating,
+                hasBeenRated: ratingRecord !== undefined,
+            };
+        }));
+    }
+    async rateStudent(sessionId, studentId, rating, tutorUserId) {
+        const session = await this.prisma.tutoringSession.findUnique({
+            where: { id: sessionId },
+            include: { tutor: true },
+        });
+        if (!session)
+            throw new common_1.NotFoundException('Tutoría no encontrada');
+        if (session.tutor.userId !== tutorUserId)
+            throw new common_1.ForbiddenException('No autorizado');
+        await this.prisma.studentRating.upsert({
+            where: {
+                sessionId_studentId_tutorId: {
+                    sessionId,
+                    studentId,
+                    tutorId: session.tutor.id,
+                },
+            },
+            update: { rating },
+            create: { sessionId, studentId, tutorId: session.tutor.id, rating },
+        });
+        return { success: true };
+    }
 };
 exports.TutoriasService = TutoriasService;
 exports.TutoriasService = TutoriasService = TutoriasService_1 = __decorate([

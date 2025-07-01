@@ -77,8 +77,11 @@ let AuthService = class AuthService {
             email: user.email,
             role: user.role,
         });
-        return { user: safeUser, access_token: token,
-            message: 'Te hemos enviado un correo para verificar tu cuenta.', };
+        return {
+            user: safeUser,
+            access_token: token,
+            message: 'Te hemos enviado un correo para verificar tu cuenta.',
+        };
     }
     async login(dto) {
         const user = await this.prisma.user.findUnique({
@@ -122,9 +125,7 @@ let AuthService = class AuthService {
                 },
             });
             await this.prisma.notificationPreference.create({
-                data: {
-                    userId: user.id,
-                },
+                data: { userId: user.id },
             });
             await this.prisma.studentProfile.create({
                 data: {
@@ -145,12 +146,7 @@ let AuthService = class AuthService {
         });
         return { token, isNewUser, user };
     }
-<<<<<<< HEAD
-        async forgotPassword(email) {
-=======
-<<<<<<< HEAD
     async forgotPassword(email) {
->>>>>>> 5fec84dab2290a5c7a7b45725507facdea7d0de6
         const user = await this.prisma.user.findUnique({ where: { email } });
         if (!user)
             return;
@@ -160,24 +156,24 @@ let AuthService = class AuthService {
             to: email,
             subject: 'Restablece tu contraseña',
             html: `
-    <h2>Recuperación de contraseña</h2>
-    <p>Haz clic en el botón para restablecer tu contraseña:</p>
-    <a href="${resetUrl}" style="
-      display: inline-block;
-      padding: 10px 20px;
-      background-color: #0ea5e9;
-      color: white;
-      text-decoration: none;
-      border-radius: 6px;
-      font-weight: bold;
-    ">
-      Restablecer contraseña
-    </a>
-    <p style="font-size: 12px; color: #666; margin-top: 20px;">
-      Si no solicitaste este cambio, puedes ignorar este mensaje.<br/>
-      Este enlace expirará en 15 minutos.
-    </p>
-  `,
+        <h2>Recuperación de contraseña</h2>
+        <p>Haz clic en el botón para restablecer tu contraseña:</p>
+        <a href="${resetUrl}" style="
+          display: inline-block;
+          padding: 10px 20px;
+          background-color: #0ea5e9;
+          color: white;
+          text-decoration: none;
+          border-radius: 6px;
+          font-weight: bold;
+        ">
+          Restablecer contraseña
+        </a>
+        <p style="font-size: 12px; color: #666; margin-top: 20px;">
+          Si no solicitaste este cambio, puedes ignorar este mensaje.<br/>
+          Este enlace expirará en 15 minutos.
+        </p>
+      `,
         });
     }
     async resetPassword(token, newPassword) {
@@ -202,11 +198,7 @@ let AuthService = class AuthService {
             data: { password: hashedPassword },
         });
         return { message: 'Contraseña actualizada con éxito.' };
-<<<<<<< HEAD
     }
-=======
-=======
->>>>>>> 5fec84dab2290a5c7a7b45725507facdea7d0de6
     async verifyEmailToken(token) {
         try {
             const payload = this.jwt.verify(token, { secret: process.env.JWT_SECRET });
@@ -222,22 +214,16 @@ let AuthService = class AuthService {
     }
     async resendVerificationEmail(email) {
         const user = await this.prisma.user.findUnique({ where: { email } });
-        if (!user) {
+        if (!user)
             return;
-        }
-        if (user.email_verified) {
+        if (user.email_verified)
             return;
-        }
         const verificationToken = this.jwt.sign({ userId: user.id }, { expiresIn: '1d', secret: process.env.JWT_SECRET });
         await this.mailerService.sendMail({
             to: user.email,
             subject: 'Verifica tu correo electrónico',
             text: `Hola ${user.full_name}, por favor verifica tu correo haciendo clic en el siguiente enlace:\n${process.env.FRONTEND_URL}/verify?token=${verificationToken}`,
         });
-<<<<<<< HEAD
-=======
->>>>>>> 913936c99bd0943bc281d1d0c0047e5434fa602f
->>>>>>> 5fec84dab2290a5c7a7b45725507facdea7d0de6
     }
     async assignRole(userId, role) {
         await this.prisma.user.update({

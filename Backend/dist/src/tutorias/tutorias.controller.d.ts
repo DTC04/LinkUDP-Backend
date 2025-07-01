@@ -24,6 +24,14 @@ export declare class TutoriasController {
         location: string | null;
         notes: string | null;
     }[]>;
+    getStudents(id: string): Promise<{
+        id: number;
+        name: string;
+        email: string;
+        rating: number;
+        averageRating: number;
+        hasBeenRated: boolean;
+    }[]>;
     findOne(id: number): Promise<TutoringSession>;
     update(id: number, updateTutoriaDto: UpdateTutoriaDto): Promise<TutoringSession>;
     remove(id: number): Promise<TutoringSession>;
@@ -103,4 +111,7 @@ export declare class TutoriasController {
         sessionId: number;
         createdAt: Date;
     })[]>;
+    rateStudent(id: string, studentId: number, rating: number, req: any): Promise<{
+        success: boolean;
+    }>;
 }

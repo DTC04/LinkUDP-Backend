@@ -70,6 +70,12 @@ async getRecommended(@GetUser() user: { id: number }) {
   return this.tutoriasService.getRecommendedTutorings(user.id);
 }
 
+
+  @Get(':id/students')
+  async getStudents(@Param('id') id: string) {
+    return this.tutoriasService.getStudentsByTutoriaId(id);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Obtener los detalles de una tutoría específica' })
   @ApiResponse({ status: 200, description: 'Detalles de la tutoría obtenidos exitosamente.' })
@@ -131,5 +137,21 @@ async getRecommended(@GetUser() user: { id: number }) {
   @ApiOperation({ summary: 'Obtener las tutorías guardadas por el usuario' })
   async getSaved(@GetUser() user: { id: number }) {
     return this.tutoriasService.getSaved(user.id);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/rate-student')
+  async rateStudent(
+    @Param('id') id: string,
+    @Body('studentId') studentId: number,
+    @Body('rating') rating: number,
+    @Req() req: any
+  ) {
+    // req.user.id debe ser el id del usuario autenticado (tutor)
+    return this.tutoriasService.rateStudent(
+      Number(id),
+      studentId,
+      rating,
+      req.user.id
+    );
   }
 }

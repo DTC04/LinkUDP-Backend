@@ -10,21 +10,13 @@ import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { MailerService } from '@nestjs-modules/mailer';
-<<<<<<< HEAD
-
-=======
->>>>>>> 913936c99bd0943bc281d1d0c0047e5434fa602f
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
-<<<<<<< HEAD
     private readonly mailerService: MailerService,
-=======
-    private mailerService: MailerService,
->>>>>>> 913936c99bd0943bc281d1d0c0047e5434fa602f
   ) {}
 
   async register(dto: RegisterDto) {
@@ -48,12 +40,10 @@ export class AuthService {
       },
     });
 
-    // Create default notification preferences for the new user
+    // Crear preferencias de notificación por defecto
     await this.prisma.notificationPreference.create({
       data: {
         userId: user.id,
-        // Default values from schema.prisma will be applied automatically
-        // e.g., email_on_booking: true, email_on_cancellation: true, etc.
       },
     });
 
@@ -77,7 +67,6 @@ export class AuthService {
       });
     }
 
-   
     const verificationToken = this.jwt.sign(
       { userId: user.id },
       { expiresIn: '1d', secret: process.env.JWT_SECRET },
@@ -87,7 +76,7 @@ export class AuthService {
       to: user.email,
       subject: 'Verifica tu correo electrónico',
       text: `Hola ${user.full_name}, por favor verifica tu correo haciendo clic en el siguiente enlace:\n${process.env.FRONTEND_URL}/verify?token=${verificationToken}`,
-    });    
+    });
 
     const { password, ...safeUser } = user;
 
@@ -97,8 +86,11 @@ export class AuthService {
       role: user.role,
     });
 
-    return { user: safeUser, access_token: token, 
-      message: 'Te hemos enviado un correo para verificar tu cuenta.', };
+    return {
+      user: safeUser,
+      access_token: token,
+      message: 'Te hemos enviado un correo para verificar tu cuenta.',
+    };
   }
 
   async login(dto: LoginDto) {
@@ -139,10 +131,10 @@ export class AuthService {
 
   async loginWithGoogle(googleUser: any): Promise<{ token: string; isNewUser: boolean; user: any }> {
     const { email, name } = googleUser;
-  
+
     let user = await this.prisma.user.findUnique({ where: { email } });
     const isNewUser = !user;
-  
+
     if (isNewUser) {
       user = await this.prisma.user.create({
         data: {
@@ -153,44 +145,99 @@ export class AuthService {
         },
       });
 
-      // Create default notification preferences for the new Google user
       await this.prisma.notificationPreference.create({
-        data: {
-          userId: user.id,
-          // Default values from schema.prisma will be applied
-        },
+        data: { userId: user.id },
       });
 
-      // Optionally, create a default StudentProfile for new Google users
-      // This depends on your application's logic for onboarding Google users
       await this.prisma.studentProfile.create({
         data: {
           userId: user.id,
-          university: '', // Or some default/placeholder
-          career: '',     // Or some default/placeholder
-          study_year: 0,  // Or some default/placeholder
+          university: '',
+          career: '',
+          study_year: 0,
         },
       });
     }
-  
+
     if (!user) {
       throw new Error('No se pudo crear o recuperar el usuario de Google');
     }
-  
+
     const token = this.jwt.sign({
       sub: user.id,
       email: user.email,
       role: user.role,
     });
-  
+
     return { token, isNewUser, user };
   }
-  
-<<<<<<< HEAD
-  
+
   async forgotPassword(email: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
-=======
+
+    if (!user) return; // Por seguridad, no informamos si no existe
+
+    const token = this.jwt.sign(
+      { email },
+      { expiresIn: '15m', secret: process.env.JWT_FORGOT_PASSWORD }
+    );
+
+    const resetUrl = `http://localhost:3001/reset-password?token=${token}`;
+
+    await this.mailerService.sendMail({
+      to: email,
+      subject: 'Restablece tu contraseña',
+      html: `
+        <h2>Recuperación de contraseña</h2>
+        <p>Haz clic en el botón para restablecer tu contraseña:</p>
+        <a href="${resetUrl}" style="
+          display: inline-block;
+          padding: 10px 20px;
+          background-color: #0ea5e9;
+          color: white;
+          text-decoration: none;
+          border-radius: 6px;
+          font-weight: bold;
+        ">
+          Restablecer contraseña
+        </a>
+        <p style="font-size: 12px; color: #666; margin-top: 20px;">
+          Si no solicitaste este cambio, puedes ignorar este mensaje.<br/>
+          Este enlace expirará en 15 minutos.
+        </p>
+      `,
+    });
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    let payload: any;
+
+    try {
+      payload = this.jwt.verify(token, {
+        secret: process.env.JWT_FORGOT_PASSWORD,
+      });
+    } catch (err) {
+      throw new Error('El token es inválido o ha expirado.');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { email: payload.email },
+    });
+
+    if (!user) {
+      throw new Error('Usuario no encontrado.');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await this.prisma.user.update({
+      where: { email: payload.email },
+      data: { password: hashedPassword },
+    });
+
+    return { message: 'Contraseña actualizada con éxito.' };
+  }
+
   async verifyEmailToken(token: string) {
     try {
       const payload = this.jwt.verify(token, { secret: process.env.JWT_SECRET });
@@ -207,15 +254,9 @@ export class AuthService {
   async resendVerificationEmail(email: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
-    if (!user) {
-      // Don't throw an error to prevent email enumeration attacks
-      return;
-    }
+    if (!user) return;
 
-    if (user.email_verified) {
-      // Optional: handle case where email is already verified
-      return;
-    }
+    if (user.email_verified) return;
 
     const verificationToken = this.jwt.sign(
       { userId: user.id },
@@ -229,76 +270,6 @@ export class AuthService {
     });
   }
 
->>>>>>> 913936c99bd0943bc281d1d0c0047e5434fa602f
-
-    // Por seguridad, no informamos si el usuario no existe
-    if (!user) return;
-
-    const token = this.jwt.sign(
-      { email },
-      { expiresIn: '15m', secret: process.env.JWT_FORGOT_PASSWORD } // Expira en 15 minutos
-    );
-//modificar una vez este levantado el servicio
-    const resetUrl = `http://localhost:3001/reset-password?token=${token}`;
-
-   await this.mailerService.sendMail({
-  to: email,
-  subject: 'Restablece tu contraseña',
-  html: `
-    <h2>Recuperación de contraseña</h2>
-    <p>Haz clic en el botón para restablecer tu contraseña:</p>
-    <a href="${resetUrl}" style="
-      display: inline-block;
-      padding: 10px 20px;
-      background-color: #0ea5e9;
-      color: white;
-      text-decoration: none;
-      border-radius: 6px;
-      font-weight: bold;
-    ">
-      Restablecer contraseña
-    </a>
-    <p style="font-size: 12px; color: #666; margin-top: 20px;">
-      Si no solicitaste este cambio, puedes ignorar este mensaje.<br/>
-      Este enlace expirará en 15 minutos.
-    </p>
-  `,
-});
-  }
-
-async resetPassword(token: string, newPassword: string) {
-  let payload: any;
-
-  try {
-    payload = this.jwt.verify(token, {
-      secret: process.env.JWT_FORGOT_PASSWORD,
-    });
-  } catch (err) {
-    throw new Error('El token es inválido o ha expirado.');
-  }
-
-  const user = await this.prisma.user.findUnique({
-    where: { email: payload.email },
-  });
-
-  if (!user) {
-    throw new Error('Usuario no encontrado.');
-  }
-
-  const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-  await this.prisma.user.update({
-    where: { email: payload.email },
-    data: { password: hashedPassword },
-  });
-
-  return { message: 'Contraseña actualizada con éxito.' };
-}
-
-
-
-
-  
   async assignRole(userId: number, role: Role.STUDENT | Role.TUTOR) {
     await this.prisma.user.update({
       where: { id: userId },
