@@ -45,6 +45,9 @@ let TutoriasController = class TutoriasController {
         console.log("🧠 Usuario recibido:", user);
         return this.tutoriasService.getRecommendedTutorings(user.id);
     }
+    async getStudents(id) {
+        return this.tutoriasService.getStudentsByTutoriaId(id);
+    }
     async findOne(id) {
         const tutoria = await this.tutoriasService.findOne(id);
         if (!tutoria) {
@@ -70,6 +73,9 @@ let TutoriasController = class TutoriasController {
     }
     async getSaved(user) {
         return this.tutoriasService.getSaved(user.id);
+    }
+    async rateStudent(id, studentId, rating, req) {
+        return this.tutoriasService.rateStudent(Number(id), studentId, rating, req.user.id);
     }
 };
 exports.TutoriasController = TutoriasController;
@@ -111,6 +117,13 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], TutoriasController.prototype, "getRecommended", null);
+__decorate([
+    (0, common_1.Get)(':id/students'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], TutoriasController.prototype, "getStudents", null);
 __decorate([
     (0, common_1.Get)(':id'),
     (0, swagger_1.ApiOperation)({ summary: 'Obtener los detalles de una tutoría específica' }),
@@ -183,6 +196,17 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], TutoriasController.prototype, "getSaved", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)(':id/rate-student'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)('studentId')),
+    __param(2, (0, common_1.Body)('rating')),
+    __param(3, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Number, Number, Object]),
+    __metadata("design:returntype", Promise)
+], TutoriasController.prototype, "rateStudent", null);
 exports.TutoriasController = TutoriasController = __decorate([
     (0, swagger_1.ApiTags)('tutorias'),
     (0, common_1.Controller)('tutorias'),

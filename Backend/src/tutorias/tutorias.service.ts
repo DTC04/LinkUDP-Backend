@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service'; 
 import { CreateTutoriaDto } from './dto/create-tutoria.dto';
 import { UpdateTutoriaDto } from './dto/update-tutoria.dto';
@@ -173,7 +173,7 @@ export class TutoriasService {
 
     // If 'date' was in updateTutoriaDto but 'start_time' was not,
     // and we updated dataToUpdate.date directly, we should log a warning or consider if this is desired.
-    // For now, the above logic prioritizes start_time for setting date, then falls back to dto.date if start_time is absent.
+    // For now, the above logic prioritizes start_time for eting date, then falls back to dto.date if start_time is absent.
 
     try {
       const updatedTutoria = await this.prisma.tutoringSession.update({
@@ -484,5 +484,81 @@ El estudiante ${studentProfile.user.full_name} (${studentProfile.user.email}) te
         },
       },
     });
+  }
+  async getStudentsByTutoriaId(tutoriaId: string) {
+    const sessionId = Number(tutoriaId);
+    if (isNaN(sessionId)) {
+      throw new NotFoundException('ID de tutoría inválido.');
+    }
+
+    const bookings = await this.prisma.booking.findMany({
+      where: { sessionId },
+      include: {
+        studentProfile: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                full_name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const ratings = await this.prisma.studentRating.findMany({
+      where: { sessionId },
+      select: { studentId: true, rating: true },
+    });
+
+    // Calcula el promedio global de cada estudiante
+    return Promise.all(bookings.map(async (b) => {
+      const ratingRecord = ratings.find(r => r.studentId === b.studentProfile.id);
+
+      // Busca todas las calificaciones de este estudiante
+      const allRatings = await this.prisma.studentRating.findMany({
+        where: { studentId: b.studentProfile.id },
+        select: { rating: true },
+      });
+      const averageRating =
+        allRatings.length > 0
+          ? allRatings.reduce((sum, r) => sum + r.rating, 0) / allRatings.length
+          : 0;
+
+      return {
+        id: b.studentProfile.id, // id del perfil de estudiante
+        name: b.studentProfile.user.full_name,
+        email: b.studentProfile.user.email,
+        rating: ratingRecord?.rating ?? 0, // rating de ESTA sesión
+        averageRating, // promedio global
+        hasBeenRated: ratingRecord !== undefined,
+      };
+    }));
+  }
+
+  async rateStudent(sessionId: number, studentId: number, rating: number, tutorUserId: number) {
+    // Busca la sesión y verifica que el usuario sea el tutor
+    const session = await this.prisma.tutoringSession.findUnique({
+      where: { id: sessionId },
+      include: { tutor: true },
+    });
+    if (!session) throw new NotFoundException('Tutoría no encontrada');
+    if (session.tutor.userId !== tutorUserId) throw new ForbiddenException('No autorizado');
+
+    // Usa el id del perfil de tutor (no el userId)
+    await this.prisma.studentRating.upsert({
+      where: {
+        sessionId_studentId_tutorId: {
+          sessionId,
+          studentId,
+          tutorId: session.tutor.id,
+        },
+      },
+      update: { rating },
+      create: { sessionId, studentId, tutorId: session.tutor.id, rating },
+    });
+    return { success: true };
   }
 }
