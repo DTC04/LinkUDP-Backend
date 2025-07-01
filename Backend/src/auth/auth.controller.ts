@@ -10,6 +10,7 @@ import {
   Req,
   UseGuards, 
   HttpCode, 
+  Query,
 } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
@@ -18,13 +19,9 @@ import { LoginDto } from './dto/login.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { GetUser } from './get-user.decorator';
-<<<<<<< HEAD
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { Public } from './public.decorator';
 import { ResetPasswordDto } from './dto/reset-password.dto'
-=======
-import { Query } from '@nestjs/common';
->>>>>>> 913936c99bd0943bc281d1d0c0047e5434fa602f
 
 const cookieOptions = {
   httpOnly: true,
