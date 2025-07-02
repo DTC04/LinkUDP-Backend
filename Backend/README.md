@@ -33,7 +33,7 @@ docker-compose up -d
 cp .env.example .env
 Ejemplo de contenido:
 env
-DATABASE_URL="postgresql://postgres:admin@localhost:5432/linkudp"
+DATABASE_URL="postgresql://YOUR_DATABASE_USER:YOUR_DATABASE_PASSWORD@YOUR_DATABASE_HOST:YOUR_DATABASE_PORT/YOUR_DATABASE_NAME"
 ```
 ## 🧩 Configurar Prisma
 ### 1. Inicializa Prisma (solo una vez)

@@ -83,15 +83,15 @@ let AuthController = class AuthController {
             throw new Error('Fallo al generar el token de Google');
         }
         res.cookie('access_token', token, cookieOptions);
-        let redirectTo = 'http://localhost:3001/dashboard';
+        let redirectTo = `${process.env.FRONTEND_URL}/dashboard`;
         if (isNewUser) {
-            redirectTo = 'http://localhost:3001/onboarding/select-role';
+            redirectTo = `${process.env.FRONTEND_URL}/onboarding/select-role`;
         }
         else if (user.role === register_dto_1.Role.STUDENT) {
-            redirectTo = 'http://localhost:3001/dashboard/student';
+            redirectTo = `${process.env.FRONTEND_URL}/dashboard/student`;
         }
         else if (user.role === register_dto_1.Role.TUTOR) {
-            redirectTo = 'http://localhost:3001/dashboard/tutor';
+            redirectTo = `${process.env.FRONTEND_URL}/dashboard/tutor`;
         }
         res.redirect(redirectTo);
     }
@@ -114,8 +114,8 @@ let AuthController = class AuthController {
         });
         res.cookie('access_token', token, cookieOptions);
         const redirectTo = role === register_dto_1.Role.STUDENT
-            ? 'http://localhost:3001/onboarding/student'
-            : 'http://localhost:3001/onboarding/tutor';
+            ? `${process.env.FRONTEND_URL}/onboarding/student`
+            : `${process.env.FRONTEND_URL}/onboarding/tutor`;
         return { message: 'Rol asignado', redirectTo };
     }
     getMe(user) {

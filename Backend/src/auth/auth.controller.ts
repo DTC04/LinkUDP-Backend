@@ -118,13 +118,13 @@ async resetPassword(@Body() body: ResetPasswordDto) {
 
     res.cookie('access_token', token, cookieOptions);
 
-    let redirectTo = 'http://localhost:3001/dashboard';
+    let redirectTo = `${process.env.FRONTEND_URL}/dashboard`;
     if (isNewUser) {
-      redirectTo = 'http://localhost:3001/onboarding/select-role';
+      redirectTo = `${process.env.FRONTEND_URL}/onboarding/select-role`;
     } else if (user.role === Role.STUDENT) {
-      redirectTo = 'http://localhost:3001/dashboard/student';
+      redirectTo = `${process.env.FRONTEND_URL}/dashboard/student`;
     } else if (user.role === Role.TUTOR) {
-      redirectTo = 'http://localhost:3001/dashboard/tutor';
+      redirectTo = `${process.env.FRONTEND_URL}/dashboard/tutor`;
     }
 
     res.redirect(redirectTo);
@@ -166,8 +166,8 @@ async resetPassword(@Body() body: ResetPasswordDto) {
 
     const redirectTo =
       role === Role.STUDENT
-        ? 'http://localhost:3001/onboarding/student'
-        : 'http://localhost:3001/onboarding/tutor';
+        ? `${process.env.FRONTEND_URL}/onboarding/student`
+        : `${process.env.FRONTEND_URL}/onboarding/tutor`;
 
     return { message: 'Rol asignado', redirectTo };
   }
