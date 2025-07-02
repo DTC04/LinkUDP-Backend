@@ -4,6 +4,7 @@ import { CreateTutoriaDto } from './dto/create-tutoria.dto';
 import { UpdateTutoriaDto } from './dto/update-tutoria.dto';
 import { TutoringSession, Prisma, BookingStatus, User, NotificationPreference } from '@prisma/client'; 
 import { MailerService } from '@nestjs-modules/mailer';
+import { forbiddenWords } from '../config/forbidden-words';
 
 @Injectable()
 export class TutoriasService {
@@ -13,6 +14,15 @@ export class TutoriasService {
     private prisma: PrismaService,
     private readonly mailerService: MailerService
   ) {}
+
+  private validateText(text: string) {
+    const lowerCaseText = text.toLowerCase();
+    for (const word of forbiddenWords) {
+      if (lowerCaseText.includes(word)) {
+        throw new ForbiddenException(`El texto contiene palabras no permitidas: ${word}`);
+      }
+    }
+  }
 
   async create(createTutoriaDto: CreateTutoriaDto): Promise<TutoringSession> {
     if (
@@ -26,6 +36,9 @@ export class TutoriasService {
     ) {
       throw new Error('Todos los campos son requeridos para publicar la tutoría.');
     }
+
+    this.validateText(createTutoriaDto.title);
+    this.validateText(createTutoriaDto.description);
 
     const startTime = new Date(createTutoriaDto.start_time);
     const sessionDate = new Date(Date.UTC(startTime.getUTCFullYear(), startTime.getUTCMonth(), startTime.getUTCDate()));
@@ -145,6 +158,13 @@ export class TutoriasService {
   }
 
   async update(id: number, updateTutoriaDto: UpdateTutoriaDto): Promise<TutoringSession> {
+    if (updateTutoriaDto.title) {
+      this.validateText(updateTutoriaDto.title);
+    }
+    if (updateTutoriaDto.description) {
+      this.validateText(updateTutoriaDto.description);
+    }
+
     const { start_time, end_time, date, ...restOfDto } = updateTutoriaDto; // 'date' is explicitly extracted
     const dataToUpdate: Prisma.TutoringSessionUpdateInput = { ...restOfDto };
 
@@ -400,6 +420,7 @@ export class TutoriasService {
     studentUserId: number,
     message: string
   ): Promise<void> {
+    this.validateText(message);
     // 1. Buscar la sesión y los datos relacionados
     const session = await this.prisma.tutoringSession.findUnique({
       where: { id: sessionId },

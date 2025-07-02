@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CoursesController = void 0;
 const common_1 = require("@nestjs/common");
 const courses_service_1 = require("./courses.service");
-const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
+const public_decorator_1 = require("../auth/public.decorator");
 let CoursesController = class CoursesController {
     coursesService;
     constructor(coursesService) {
@@ -24,7 +24,7 @@ let CoursesController = class CoursesController {
 };
 exports.CoursesController = CoursesController;
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, public_decorator_1.Public)(),
     (0, common_1.Get)(),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),

@@ -182,7 +182,7 @@ export class AuthService {
       { expiresIn: '15m', secret: process.env.JWT_FORGOT_PASSWORD }
     );
 
-    const resetUrl = `http://localhost:3001/reset-password?token=${token}`;
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
 
     await this.mailerService.sendMail({
       to: email,
