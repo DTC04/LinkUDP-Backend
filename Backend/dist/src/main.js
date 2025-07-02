@@ -11,10 +11,8 @@ async function bootstrap() {
     app.enableCors({
         origin: 'http://localhost:3001',
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Cookie'],
         credentials: true,
-        preflightContinue: false,
-        optionsSuccessStatus: 204,
     });
     const config = new swagger_1.DocumentBuilder()
         .setTitle('API de Tutorías LinkUDP')

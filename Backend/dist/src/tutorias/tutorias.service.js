@@ -15,6 +15,7 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const mailer_1 = require("@nestjs-modules/mailer");
+const forbidden_words_1 = require("../config/forbidden-words");
 let TutoriasService = TutoriasService_1 = class TutoriasService {
     prisma;
     mailerService;
@@ -22,6 +23,14 @@ let TutoriasService = TutoriasService_1 = class TutoriasService {
     constructor(prisma, mailerService) {
         this.prisma = prisma;
         this.mailerService = mailerService;
+    }
+    validateText(text) {
+        const lowerCaseText = text.toLowerCase();
+        for (const word of forbidden_words_1.forbiddenWords) {
+            if (lowerCaseText.includes(word)) {
+                throw new common_1.ForbiddenException(`El texto contiene palabras no permitidas: ${word}`);
+            }
+        }
     }
     async create(createTutoriaDto) {
         if (!createTutoriaDto.tutorId ||
@@ -33,6 +42,8 @@ let TutoriasService = TutoriasService_1 = class TutoriasService {
             !createTutoriaDto.end_time) {
             throw new Error('Todos los campos son requeridos para publicar la tutoría.');
         }
+        this.validateText(createTutoriaDto.title);
+        this.validateText(createTutoriaDto.description);
         const startTime = new Date(createTutoriaDto.start_time);
         const sessionDate = new Date(Date.UTC(startTime.getUTCFullYear(), startTime.getUTCMonth(), startTime.getUTCDate()));
         return this.prisma.tutoringSession.create({
@@ -136,6 +147,12 @@ let TutoriasService = TutoriasService_1 = class TutoriasService {
         return tutoria;
     }
     async update(id, updateTutoriaDto) {
+        if (updateTutoriaDto.title) {
+            this.validateText(updateTutoriaDto.title);
+        }
+        if (updateTutoriaDto.description) {
+            this.validateText(updateTutoriaDto.description);
+        }
         const { start_time, end_time, date, ...restOfDto } = updateTutoriaDto;
         const dataToUpdate = { ...restOfDto };
         if (start_time) {
@@ -344,6 +361,7 @@ let TutoriasService = TutoriasService_1 = class TutoriasService {
         });
     }
     async contactTutor(sessionId, studentUserId, message) {
+        this.validateText(message);
         const session = await this.prisma.tutoringSession.findUnique({
             where: { id: sessionId },
             include: {

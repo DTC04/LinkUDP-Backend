@@ -11,8 +11,6 @@ export declare class TutoriasController {
         id: number;
     }): Promise<{
         id: number;
-        created_at: Date;
-        updated_at: Date;
         tutorId: number;
         courseId: number;
         title: string;
@@ -23,6 +21,8 @@ export declare class TutoriasController {
         status: import(".prisma/client").$Enums.BookingStatus;
         location: string | null;
         notes: string | null;
+        created_at: Date;
+        updated_at: Date;
     }[]>;
     getStudents(id: string): Promise<{
         id: number;
@@ -59,13 +59,15 @@ export declare class TutoriasController {
     }): Promise<({
         session: {
             course: {
-                name: string;
                 id: number;
+                name: string;
                 subject_area: string;
             };
             tutor: {
                 user: {
                     id: number;
+                    created_at: Date;
+                    updated_at: Date;
                     full_name: string;
                     email: string;
                     password: string | null;
@@ -74,8 +76,6 @@ export declare class TutoriasController {
                     role: import(".prisma/client").$Enums.Role;
                     photo_url: string | null;
                     email_verified: boolean;
-                    created_at: Date;
-                    updated_at: Date;
                 };
             } & {
                 id: number;
@@ -92,8 +92,6 @@ export declare class TutoriasController {
             };
         } & {
             id: number;
-            created_at: Date;
-            updated_at: Date;
             tutorId: number;
             courseId: number;
             title: string;
@@ -104,6 +102,8 @@ export declare class TutoriasController {
             status: import(".prisma/client").$Enums.BookingStatus;
             location: string | null;
             notes: string | null;
+            created_at: Date;
+            updated_at: Date;
         };
     } & {
         id: number;
