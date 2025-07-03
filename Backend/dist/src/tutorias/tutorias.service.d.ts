@@ -31,15 +31,13 @@ export declare class TutoriasService {
     getSaved(userId: number): Promise<({
         session: {
             course: {
-                id: number;
                 name: string;
+                id: number;
                 subject_area: string;
             };
             tutor: {
                 user: {
                     id: number;
-                    created_at: Date;
-                    updated_at: Date;
                     full_name: string;
                     email: string;
                     password: string | null;
@@ -48,6 +46,8 @@ export declare class TutoriasService {
                     role: import(".prisma/client").$Enums.Role;
                     photo_url: string | null;
                     email_verified: boolean;
+                    created_at: Date;
+                    updated_at: Date;
                 };
             } & {
                 id: number;
@@ -64,6 +64,8 @@ export declare class TutoriasService {
             };
         } & {
             id: number;
+            created_at: Date;
+            updated_at: Date;
             tutorId: number;
             courseId: number;
             title: string;
@@ -74,8 +76,6 @@ export declare class TutoriasService {
             status: import(".prisma/client").$Enums.BookingStatus;
             location: string | null;
             notes: string | null;
-            created_at: Date;
-            updated_at: Date;
         };
     } & {
         id: number;
